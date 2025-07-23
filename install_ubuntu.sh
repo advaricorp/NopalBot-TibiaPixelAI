@@ -1,14 +1,15 @@
 #!/bin/bash
 
-# PBT Bot - Ubuntu Server Installation Script
+# PBT Bot - Ubuntu 22.04 & WSL Installation Script
 # By Taquito Loco 🎮
-# For running multiple bot instances on Ubuntu Server
+# For running multiple bot instances on Ubuntu Server/WSL
 
 set -e
 
-echo "🤖 PBT Bot - Ubuntu Server Installation"
-echo "========================================"
+echo "🤖 PBT Bot - Ubuntu 22.04 & WSL Installation"
+echo "=============================================="
 echo "Installing PBT Bot for headless operation..."
+echo "🐧 Compatible with Ubuntu 22.04 and WSL"
 echo
 
 # Colors for output
@@ -41,16 +42,79 @@ if [[ $EUID -eq 0 ]]; then
    exit 1
 fi
 
+# Check Ubuntu version
+UBUNTU_VERSION=$(lsb_release -rs)
+print_header "Detected Ubuntu version: $UBUNTU_VERSION"
+
+if [[ "$UBUNTU_VERSION" != "22.04" && "$UBUNTU_VERSION" != "20.04" ]]; then
+    print_warning "This script is optimized for Ubuntu 22.04. You're running $UBUNTU_VERSION"
+fi
+
 # Update system
 print_header "Updating system packages..."
 sudo apt update && sudo apt upgrade -y
 
-# Install required packages
-print_header "Installing required packages..."
-sudo apt install -y python3 python3-pip python3-venv git screen tmux xvfb x11vnc
-
-# Install additional dependencies for GUI support (if needed)
-sudo apt install -y python3-tk tk-dev
+# Install required packages for Ubuntu 22.04
+print_header "Installing required packages for Ubuntu 22.04..."
+sudo apt install -y \
+    python3 \
+    python3-pip \
+    python3-venv \
+    python3-tk \
+    tk-dev \
+    git \
+    screen \
+    tmux \
+    xvfb \
+    x11vnc \
+    tightvncserver \
+    xfce4 \
+    xfce4-goodies \
+    xfce4-terminal \
+    firefox \
+    curl \
+    wget \
+    nano \
+    htop \
+    net-tools \
+    iputils-ping \
+    openssh-client \
+    build-essential \
+    libssl-dev \
+    libffi-dev \
+    python3-dev \
+    libjpeg-dev \
+    libpng-dev \
+    libtiff-dev \
+    libavcodec-dev \
+    libavformat-dev \
+    libswscale-dev \
+    libv4l-dev \
+    libxvidcore-dev \
+    libx264-dev \
+    libgtk-3-dev \
+    libatlas-base-dev \
+    gfortran \
+    libhdf5-dev \
+    libhdf5-serial-dev \
+    libhdf5-103 \
+    libqtgui4 \
+    libqtwebkit4 \
+    libqt4-test \
+    python3-pyqt5 \
+    libgstreamer1.0-0 \
+    gstreamer1.0-plugins-base \
+    gstreamer1.0-plugins-good \
+    gstreamer1.0-plugins-bad \
+    gstreamer1.0-plugins-ugly \
+    gstreamer1.0-libav \
+    gstreamer1.0-tools \
+    gstreamer1.0-x \
+    gstreamer1.0-alsa \
+    gstreamer1.0-gl \
+    gstreamer1.0-gtk3 \
+    gstreamer1.0-qt5 \
+    gstreamer1.0-pulseaudio
 
 # Create PBT directory
 PBT_DIR="$HOME/pbt_bot"
@@ -68,7 +132,7 @@ pip install --upgrade pip
 
 # Install Python dependencies
 print_header "Installing Python dependencies..."
-pip install -r requirements.txt
+pip install -r requirements_linux.txt
 
 # Install additional Linux-specific packages
 pip install python-xlib pynput
@@ -80,7 +144,7 @@ print_header "Creating management scripts..."
 cat > start_bot.sh << 'EOF'
 #!/bin/bash
 
-# PBT Bot Start Script for Ubuntu Server
+# PBT Bot Start Script for Ubuntu 22.04 & WSL
 # By Taquito Loco 🎮
 
 BOT_DIR="$HOME/pbt_bot"
@@ -97,6 +161,7 @@ screen -dmS "pbt_bot_$BOT_NAME" bash -c "
     echo '🤖 Starting PBT Bot: $BOT_NAME'
     echo '📁 Config: $BOT_CONFIG'
     echo '⏰ Started at: $(date)'
+    echo '🐧 Ubuntu 22.04 + WSL Compatible'
     echo '========================================'
     
     # Set display for headless operation
@@ -106,11 +171,12 @@ screen -dmS "pbt_bot_$BOT_NAME" bash -c "
     if ! pgrep -x 'Xvfb' > /dev/null; then
         echo '🖥️ Starting virtual display...'
         Xvfb :99 -screen 0 1024x768x24 &
-        sleep 2
+        sleep 3
+        echo '✅ Virtual display started'
     fi
     
     # Start bot
-    python3 main.py --config $BOT_CONFIG --name $BOT_NAME
+    python3 main_linux.py --config $BOT_CONFIG --name $BOT_NAME --headless
     
     echo '🛑 Bot stopped at: $(date)'
 "
@@ -124,7 +190,7 @@ EOF
 cat > stop_bot.sh << 'EOF'
 #!/bin/bash
 
-# PBT Bot Stop Script for Ubuntu Server
+# PBT Bot Stop Script for Ubuntu 22.04 & WSL
 # By Taquito Loco 🎮
 
 BOT_NAME="${1:-all}"
@@ -144,12 +210,13 @@ EOF
 cat > status_bot.sh << 'EOF'
 #!/bin/bash
 
-# PBT Bot Status Script for Ubuntu Server
+# PBT Bot Status Script for Ubuntu 22.04 & WSL
 # By Taquito Loco 🎮
 
 echo "🤖 PBT Bot Status Report"
 echo "========================"
 echo "⏰ Generated at: $(date)"
+echo "🐧 Ubuntu 22.04 + WSL Compatible"
 echo
 
 # Check running bots
@@ -171,6 +238,16 @@ echo "  • Disk Usage: $(df -h / | awk 'NR==2 {print $5}')"
 
 echo
 
+# Check virtual display
+echo "🖥️ Virtual Display Status:"
+if pgrep -x 'Xvfb' > /dev/null; then
+    echo "  • ✅ Xvfb is running"
+else
+    echo "  • ❌ Xvfb is not running"
+fi
+
+echo
+
 # Check logs
 echo "📋 Recent Logs:"
 if [ -f "logs/pbt_bot.log" ]; then
@@ -185,7 +262,7 @@ EOF
 cat > launch_multiple_bots.sh << 'EOF'
 #!/bin/bash
 
-# PBT Bot Multi-Instance Launcher for Ubuntu Server
+# PBT Bot Multi-Instance Launcher for Ubuntu 22.04 & WSL
 # By Taquito Loco 🎮
 
 BOT_COUNT="${1:-3}"
@@ -193,6 +270,7 @@ BOT_PREFIX="${2:-bot}"
 
 echo "🚀 Launching $BOT_COUNT PBT Bot instances..."
 echo "📝 Bot prefix: $BOT_PREFIX"
+echo "🐧 Ubuntu 22.04 + WSL Compatible"
 echo
 
 for i in $(seq 1 $BOT_COUNT); do
@@ -262,7 +340,7 @@ After=network.target
 Type=simple
 User=$USER
 WorkingDirectory=$PBT_DIR
-ExecStart=$PBT_DIR/venv/bin/python $PBT_DIR/main.py
+ExecStart=$PBT_DIR/venv/bin/python $PBT_DIR/main_linux.py --headless
 Restart=always
 RestartSec=10
 Environment=DISPLAY=:99
@@ -275,14 +353,14 @@ EOF
 cat > manage_desktop.sh << 'EOF'
 #!/bin/bash
 
-# Desktop Management Script for Ubuntu Server
+# Desktop Management Script for Ubuntu 22.04 & WSL
 # By Taquito Loco 🎮
 
 case "$1" in
     "start")
         echo "🖥️ Starting virtual desktop..."
         Xvfb :99 -screen 0 1024x768x24 &
-        sleep 2
+        sleep 3
         echo "✅ Virtual desktop started on :99"
         ;;
     "stop")
@@ -293,7 +371,7 @@ case "$1" in
     "restart")
         echo "🔄 Restarting virtual desktop..."
         pkill Xvfb
-        sleep 2
+        sleep 3
         Xvfb :99 -screen 0 1024x768x24 &
         echo "✅ Virtual desktop restarted"
         ;;
@@ -306,9 +384,46 @@ EOF
 
 chmod +x manage_desktop.sh
 
+# Create WSL-specific setup script
+cat > setup_wsl.sh << 'EOF'
+#!/bin/bash
+
+# WSL Setup Script for PBT Bot
+# By Taquito Loco 🎮
+
+echo "🐧 Setting up PBT Bot for WSL..."
+
+# Check if running in WSL
+if grep -qi microsoft /proc/version; then
+    echo "✅ Running in WSL environment"
+    
+    # Install WSL-specific packages
+    sudo apt install -y \
+        x11-apps \
+        xauth \
+        x11-utils \
+        x11-xserver-utils \
+        xvfb \
+        x11vnc \
+        tightvncserver
+    
+    # Setup X11 forwarding
+    echo "export DISPLAY=:0" >> ~/.bashrc
+    echo "export DISPLAY=:99" >> ~/.bashrc
+    
+    echo "✅ WSL setup complete!"
+    echo "🖥️ For GUI access, install VcXsrv on Windows"
+    echo "📱 Then run: export DISPLAY=localhost:0.0"
+else
+    echo "⚠️ Not running in WSL environment"
+fi
+EOF
+
+chmod +x setup_wsl.sh
+
 # Create quick start guide
 cat > QUICK_START_UBUNTU.md << 'EOF'
-# 🐧 PBT Bot - Ubuntu Server Quick Start Guide
+# 🐧 PBT Bot - Ubuntu 22.04 & WSL Quick Start Guide
 
 ## 🚀 Quick Start
 
@@ -356,6 +471,20 @@ cat > QUICK_START_UBUNTU.md << 'EOF'
 
 4. **Use VNC client to connect to localhost:5901**
 
+## 🐧 WSL Specific Setup
+
+1. **Setup WSL environment:**
+   ```bash
+   ./setup_wsl.sh
+   ```
+
+2. **Install VcXsrv on Windows for GUI support**
+
+3. **Set display:**
+   ```bash
+   export DISPLAY=localhost:0.0
+   ```
+
 ## 📊 Monitoring
 
 - **View bot logs:** `tail -f logs/pbt_bot.log`
@@ -383,6 +512,13 @@ To run more bots, simply increase the number in `launch_multiple_bots.sh`:
 ```
 
 Each bot runs in its own screen session and can be managed independently.
+
+## 🐳 Docker Alternative
+
+For containerized deployment:
+```bash
+docker-compose up -d
+```
 EOF
 
 print_header "Installation Complete! 🎉"
@@ -394,6 +530,9 @@ echo
 echo "🖥️ For remote desktop access:"
 echo "   ./setup_vnc.sh"
 echo "   vncserver :1"
+echo
+echo "🐧 For WSL setup:"
+echo "   ./setup_wsl.sh"
 echo
 echo "📊 For multiple bots:"
 echo "   ./launch_multiple_bots.sh 5 bot"

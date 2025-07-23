@@ -1,7 +1,7 @@
 version: '3.8'
 
 services:
-  # PBT Bot Manager (main service)
+  # PBT Bot Manager (main service with VNC)
   pbt-manager:
     build: .
     container_name: pbt-manager
@@ -10,16 +10,24 @@ services:
       - BOT_NAME=manager
       - BOT_PREFIX=manager
       - ENABLE_VNC=true
+      - DISPLAY=:99
     volumes:
       - ./config:/home/pbtuser/pbt_bot/config
       - ./logs:/home/pbtuser/pbt_bot/logs
       - ./data:/home/pbtuser/pbt_bot/data
+      - ./scripts:/home/pbtuser/pbt_bot/scripts
     ports:
       - "5901:5901"  # VNC
       - "8080:8080"  # Web interface (if added later)
     restart: unless-stopped
     networks:
       - pbt-network
+    healthcheck:
+      test: ["CMD", "/home/pbtuser/pbt_bot/health_check.sh"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
 
   # PBT Bot Instance 1
   pbt-bot-1:
@@ -30,15 +38,24 @@ services:
       - BOT_NAME=bot1
       - BOT_PREFIX=bot
       - ENABLE_VNC=false
+      - DISPLAY=:99
     volumes:
       - ./config:/home/pbtuser/pbt_bot/config
       - ./logs:/home/pbtuser/pbt_bot/logs
       - ./data:/home/pbtuser/pbt_bot/data
+      - ./scripts:/home/pbtuser/pbt_bot/scripts
     restart: unless-stopped
     networks:
       - pbt-network
     depends_on:
-      - pbt-manager
+      pbt-manager:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "/home/pbtuser/pbt_bot/health_check.sh"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
 
   # PBT Bot Instance 2
   pbt-bot-2:
@@ -49,15 +66,24 @@ services:
       - BOT_NAME=bot2
       - BOT_PREFIX=bot
       - ENABLE_VNC=false
+      - DISPLAY=:99
     volumes:
       - ./config:/home/pbtuser/pbt_bot/config
       - ./logs:/home/pbtuser/pbt_bot/logs
       - ./data:/home/pbtuser/pbt_bot/data
+      - ./scripts:/home/pbtuser/pbt_bot/scripts
     restart: unless-stopped
     networks:
       - pbt-network
     depends_on:
-      - pbt-manager
+      pbt-manager:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "/home/pbtuser/pbt_bot/health_check.sh"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
 
   # PBT Bot Instance 3
   pbt-bot-3:
@@ -68,15 +94,24 @@ services:
       - BOT_NAME=bot3
       - BOT_PREFIX=bot
       - ENABLE_VNC=false
+      - DISPLAY=:99
     volumes:
       - ./config:/home/pbtuser/pbt_bot/config
       - ./logs:/home/pbtuser/pbt_bot/logs
       - ./data:/home/pbtuser/pbt_bot/data
+      - ./scripts:/home/pbtuser/pbt_bot/scripts
     restart: unless-stopped
     networks:
       - pbt-network
     depends_on:
-      - pbt-manager
+      pbt-manager:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "/home/pbtuser/pbt_bot/health_check.sh"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
 
   # PBT Bot Instance 4
   pbt-bot-4:
@@ -87,15 +122,24 @@ services:
       - BOT_NAME=bot4
       - BOT_PREFIX=bot
       - ENABLE_VNC=false
+      - DISPLAY=:99
     volumes:
       - ./config:/home/pbtuser/pbt_bot/config
       - ./logs:/home/pbtuser/pbt_bot/logs
       - ./data:/home/pbtuser/pbt_bot/data
+      - ./scripts:/home/pbtuser/pbt_bot/scripts
     restart: unless-stopped
     networks:
       - pbt-network
     depends_on:
-      - pbt-manager
+      pbt-manager:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "/home/pbtuser/pbt_bot/health_check.sh"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
 
   # PBT Bot Instance 5
   pbt-bot-5:
@@ -106,19 +150,32 @@ services:
       - BOT_NAME=bot5
       - BOT_PREFIX=bot
       - ENABLE_VNC=false
+      - DISPLAY=:99
     volumes:
       - ./config:/home/pbtuser/pbt_bot/config
       - ./logs:/home/pbtuser/pbt_bot/logs
       - ./data:/home/pbtuser/pbt_bot/data
+      - ./scripts:/home/pbtuser/pbt_bot/scripts
     restart: unless-stopped
     networks:
       - pbt-network
     depends_on:
-      - pbt-manager
+      pbt-manager:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "/home/pbtuser/pbt_bot/health_check.sh"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
 
 networks:
   pbt-network:
     driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16
 
 volumes:
-  pbt-data: 
+  pbt-data:
+    driver: local 
