@@ -125,8 +125,8 @@ class NopalBotIntelligent:
         
         # Configuración para druida
         self.hotkeys = {
-            'attack': 'K',
-            'next_target': 'SPACE',  # Para seleccionar siguiente objetivo
+            'attack': 'CTRL+SPACE',  # CTRL + SPACE para atacar
+            'next_target': 'SPACE',  # SPACE para seleccionar siguiente objetivo
             'heal': 'F1',
             'mana': 'F2', 
             'spell1': 'F3',  # Exori vis
@@ -365,7 +365,7 @@ class NopalBotIntelligent:
             return False
             
     def intelligent_attack(self):
-        """Ataque inteligente con SPACE para next target y K para atacar"""
+        """Ataque inteligente con SPACE para next target y CTRL+SPACE para atacar"""
         try:
             enemy_pos = self.find_closest_enemy_visual()
             
@@ -382,12 +382,15 @@ class NopalBotIntelligent:
                 self.log_to_gui(f"🎯 Next target selected with {self.hotkeys['next_target']}")
                 time.sleep(0.2)
                 
-                # Presionar K para atacar múltiples veces
+                # Presionar CTRL+SPACE para atacar múltiples veces
                 for i in range(8):  # Más ataques
                     if not self.running or self.paused:
                         break
-                    keyboard.press_and_release(self.hotkeys['attack'])
-                    self.log_to_gui(f"⚔️ ATTACKING with {self.hotkeys['attack']} - Hit {i+1}")
+                    # Presionar CTRL + SPACE
+                    keyboard.press('CTRL')
+                    keyboard.press_and_release('SPACE')
+                    keyboard.release('CTRL')
+                    self.log_to_gui(f"⚔️ ATTACKING with CTRL+SPACE - Hit {i+1}")
                     time.sleep(0.1)
                     
                 self.log_to_gui("⚔️ ATTACK SEQUENCE COMPLETED!")
@@ -398,12 +401,14 @@ class NopalBotIntelligent:
                 keyboard.press_and_release(self.hotkeys['next_target'])
                 time.sleep(0.2)
                 
-                # Intentar atacar de todas formas
+                # Intentar atacar de todas formas con CTRL+SPACE
                 for i in range(3):
                     if not self.running or self.paused:
                         break
-                    keyboard.press_and_release(self.hotkeys['attack'])
-                    self.log_to_gui(f"⚔️ BLIND ATTACK with {self.hotkeys['attack']} - Hit {i+1}")
+                    keyboard.press('CTRL')
+                    keyboard.press_and_release('SPACE')
+                    keyboard.release('CTRL')
+                    self.log_to_gui(f"⚔️ BLIND ATTACK with CTRL+SPACE - Hit {i+1}")
                     time.sleep(0.1)
                     
                 return True
@@ -765,7 +770,8 @@ class NopalBotGUI:
         
         # Lista de hotkeys
         hotkeys_text = """
-        🎯 Attack: K
+        🎯 Attack: CTRL+SPACE
+        🎯 Next Target: SPACE
         ❤️ Heal: F1
         🔮 Mana: F2
         ⚡ Spell 1: F3 (Exori vis)
