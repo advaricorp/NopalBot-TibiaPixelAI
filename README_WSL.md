@@ -1,6 +1,6 @@
-# 🐧 PBT Bot - WSL (Windows Subsystem for Linux) Guide
+# 🐧 NopalBot - WSL (Windows Subsystem for Linux) Guide
 
-## 🎮 Complete PBT Bot Setup for Ubuntu 22.04 in WSL
+## 🎮 Complete NopalBot Setup for Ubuntu 22.04 in WSL
 
 **By Taquito Loco** 🎯
 
@@ -10,7 +10,7 @@
 
 1. [Prerequisites](#prerequisites)
 2. [WSL Installation](#wsl-installation)
-3. [PBT Bot Installation](#pbt-bot-installation)
+3. [NopalBot Installation](#nopalbot-installation)
 4. [Quick Start](#quick-start)
 5. [Multi-Bot Deployment](#multi-bot-deployment)
 6. [Docker Alternative](#docker-alternative)
@@ -60,12 +60,12 @@ sudo apt update && sudo apt upgrade -y
 
 ---
 
-## 🤖 PBT Bot Installation
+## 🤖 NopalBot Installation
 
 ### 1. Clone Repository
 ```bash
-git clone https://github.com/your-username/pbt-bot-complete.git
-cd pbt-bot-complete
+git clone https://github.com/advaricorp/nopal-bot-complete.git
+cd nopal-bot-complete
 ```
 
 ### 2. Run Installation Script
@@ -123,7 +123,7 @@ chmod +x test_wsl.sh
 ./status_bot.sh
 
 # View specific bot logs
-screen -r pbt_bot_bot_1
+screen -r nopal_bot_bot_1
 
 # Stop all bots
 ./stop_bot.sh all
@@ -138,7 +138,7 @@ screen -r pbt_bot_bot_1
 ./stop_bot.sh warrior_1
 
 # View bot logs
-screen -r pbt_bot_warrior_1
+screen -r nopal_bot_warrior_1
 ```
 
 ---
@@ -147,12 +147,12 @@ screen -r pbt_bot_warrior_1
 
 ### 1. Build Docker Image
 ```bash
-docker build -t pbt-bot .
+docker build -t nopal-bot .
 ```
 
 ### 2. Run Single Container
 ```bash
-docker run -d --name pbt-single pbt-bot
+docker run -d --name nopal-single nopal-bot
 ```
 
 ### 3. Run Multiple Containers
@@ -166,7 +166,7 @@ docker-compose up -d
 docker ps
 
 # View logs
-docker logs pbt-single
+docker logs nopal-single
 
 # Stop containers
 docker-compose down
@@ -320,13 +320,13 @@ export DISPLAY=localhost:0.0
 ### View Logs
 ```bash
 # Real-time logs
-tail -f logs/pbt_bot.log
+tail -f logs/nopal_bot.log
 
 # Last 100 lines
-tail -100 logs/pbt_bot.log
+tail -100 logs/nopal_bot.log
 
 # Search logs
-grep "ERROR" logs/pbt_bot.log
+grep "ERROR" logs/nopal_bot.log
 ```
 
 ### System Monitoring
@@ -347,7 +347,7 @@ free -h
 screen -ls
 
 # Attach to bot session
-screen -r pbt_bot_botname
+screen -r nopal_bot_botname
 
 # Detach from session (Ctrl+A, D)
 ```
@@ -371,22 +371,22 @@ nano config/bot_config_warrior.json
 ### Automated Startup
 ```bash
 # Enable systemd service
-sudo systemctl enable pbt-bot.service
+sudo systemctl enable nopal-bot.service
 
 # Start service
-sudo systemctl start pbt-bot.service
+sudo systemctl start nopal-bot.service
 
 # Check service status
-sudo systemctl status pbt-bot.service
+sudo systemctl status nopal-bot.service
 ```
 
 ### Backup & Restore
 ```bash
 # Backup configurations
-tar -czf pbt_backup_$(date +%Y%m%d).tar.gz config/ logs/
+tar -czf nopal_backup_$(date +%Y%m%d).tar.gz config/ logs/
 
 # Restore configurations
-tar -xzf pbt_backup_20231201.tar.gz
+tar -xzf nopal_backup_20231201.tar.gz
 ```
 
 ### Scaling Strategies
@@ -464,7 +464,7 @@ htop
 
 ## 🎯 Conclusion
 
-This guide provides everything you need to run PBT Bot in WSL with Ubuntu 22.04. The setup is optimized for:
+This guide provides everything you need to run NopalBot in WSL with Ubuntu 22.04. The setup is optimized for:
 
 - ✅ **Multi-bot deployment** (1-100+ instances)
 - ✅ **Headless operation** (no GUI required)

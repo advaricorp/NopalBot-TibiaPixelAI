@@ -1,4 +1,4 @@
-# 🐧 PBT Bot - WSL Deployment Summary
+# 🐧 NopalBot - WSL Deployment Summary
 
 ## 🎮 Complete Ubuntu 22.04 + WSL2 Setup
 
@@ -34,8 +34,8 @@
 #### 2. **Docker Deployment**
 ```bash
 # Single container
-docker build -t pbt-bot .
-docker run -d --name pbt-single pbt-bot
+docker build -t nopal-bot .
+docker run -d --name nopal-single nopal-bot
 
 # Multi-container orchestration
 docker-compose up -d
@@ -82,7 +82,7 @@ docker-compose up -d
 ## 📁 **File Structure**
 
 ```
-PBT/
+NopalBot/
 ├── 🐧 Linux/WSL Files
 │   ├── install_ubuntu.sh          # Full Ubuntu installation
 │   ├── setup_wsl_quick.sh         # WSL quick setup
@@ -125,8 +125,8 @@ PBT/
 ### **WSL Setup (5 minutes)**
 ```bash
 # 1. Clone repository
-git clone https://github.com/your-username/pbt-bot-complete.git
-cd pbt-bot-complete
+git clone https://github.com/advaricorp/nopal-bot-complete.git
+cd nopal-bot-complete
 
 # 2. Quick WSL setup
 ./setup_wsl_quick.sh
@@ -147,7 +147,7 @@ docker-compose up -d
 docker ps
 
 # 3. View logs
-docker logs pbt-manager
+docker logs nopal-manager
 ```
 
 ### **Multi-Bot Deployment**
@@ -200,7 +200,7 @@ iotop
 screen -ls
 
 # Logs
-tail -f logs/pbt_bot.log
+tail -f logs/nopal_bot.log
 ```
 
 ### **Health Checks**
@@ -347,7 +347,7 @@ ping 8.8.8.8
 
 ## 🎉 **Conclusion**
 
-We've successfully created a **complete, production-ready PBT Bot deployment system** that includes:
+We've successfully created a **complete, production-ready NopalBot deployment system** that includes:
 
 ### ✅ **What's Working**
 - **Ubuntu 22.04** full compatibility
@@ -374,7 +374,7 @@ We've successfully created a **complete, production-ready PBT Bot deployment sys
 4. **Monitor and optimize** performance
 5. **Add web dashboard** for management
 
-**The PBT Bot is now ready for serious multi-bot deployment! 🎮**
+**The NopalBot is now ready for serious multi-bot deployment! 🎮**
 
 ---
 
