@@ -126,6 +126,7 @@ class NopalBotIntelligent:
         # Configuración para druida
         self.hotkeys = {
             'attack': 'K',
+            'next_target': 'SPACE',  # Para seleccionar siguiente objetivo
             'heal': 'F1',
             'mana': 'F2', 
             'spell1': 'F3',  # Exori vis
@@ -364,7 +365,7 @@ class NopalBotIntelligent:
             return False
             
     def intelligent_attack(self):
-        """Ataque inteligente con clic y tecla"""
+        """Ataque inteligente con SPACE para next target y K para atacar"""
         try:
             enemy_pos = self.find_closest_enemy_visual()
             
@@ -376,19 +377,36 @@ class NopalBotIntelligent:
                 self.log_to_gui(f"🎯 Clicked within Tibia at ({x}, {y})")
                 time.sleep(0.2)
                 
-                # Presionar tecla de ataque múltiples veces
-                for i in range(5):
+                # Presionar SPACE para seleccionar objetivo
+                keyboard.press_and_release(self.hotkeys['next_target'])
+                self.log_to_gui(f"🎯 Next target selected with {self.hotkeys['next_target']}")
+                time.sleep(0.2)
+                
+                # Presionar K para atacar múltiples veces
+                for i in range(8):  # Más ataques
                     if not self.running or self.paused:
                         break
                     keyboard.press_and_release(self.hotkeys['attack'])
-                    self.log_to_gui(f"⚔️ PRESSING ATTACK KEY: {self.hotkeys['attack']}")
+                    self.log_to_gui(f"⚔️ ATTACKING with {self.hotkeys['attack']} - Hit {i+1}")
                     time.sleep(0.1)
                     
                 self.log_to_gui("⚔️ ATTACK SEQUENCE COMPLETED!")
                 return True
             else:
-                self.log_to_gui("🔍 No enemies found visually")
-                return False
+                # Si no encuentra enemigo visual, intentar con SPACE para buscar
+                self.log_to_gui("🔍 No enemies found visually, trying SPACE to find target...")
+                keyboard.press_and_release(self.hotkeys['next_target'])
+                time.sleep(0.2)
+                
+                # Intentar atacar de todas formas
+                for i in range(3):
+                    if not self.running or self.paused:
+                        break
+                    keyboard.press_and_release(self.hotkeys['attack'])
+                    self.log_to_gui(f"⚔️ BLIND ATTACK with {self.hotkeys['attack']} - Hit {i+1}")
+                    time.sleep(0.1)
+                    
+                return True
                 
         except Exception as e:
             self.log_to_gui(f"❌ Error in attack: {e}")
@@ -403,16 +421,23 @@ class NopalBotIntelligent:
             # Detectar vida real
             self.detect_health_mana_from_screen()
             
-            # Curar si la vida está baja Y hay potiones
+            # Curar solo si la vida está realmente baja Y hay potiones
             if self.health < self.heal_threshold and self.health_potions > 0:
-                # Usar tecla específica para evitar controles de volumen
-                keyboard.press_and_release(self.hotkeys['heal'])
-                self.health_potions -= 1
-                self.health = min(100, self.health + 30)
-                self.log_to_gui(f"❤️ Health potion used! Health: {self.health}% (Potions left: {self.health_potions})")
-                return True
+                # Verificar que realmente necesita curación (no confundir con vida del enemigo)
+                if self.health < 50:  # Solo curar si vida < 50%
+                    keyboard.press_and_release(self.hotkeys['heal'])
+                    self.health_potions -= 1
+                    self.health = min(100, self.health + 30)
+                    self.log_to_gui(f"❤️ Health potion used! Health: {self.health}% (Potions left: {self.health_potions})")
+                    return True
+                else:
+                    self.log_to_gui(f"⚠️ Health is {self.health}% - not low enough to waste potion")
+                    return False
             elif self.health < self.heal_threshold and self.health_potions <= 0:
                 self.log_to_gui(f"⚠️ Low health ({self.health}%) but no potions available!")
+                return False
+            elif self.health >= self.heal_threshold:
+                self.log_to_gui(f"✅ Health is good: {self.health}% - no need for potion")
                 return False
                 
             return False
@@ -430,16 +455,23 @@ class NopalBotIntelligent:
             # Detectar mana real
             self.detect_health_mana_from_screen()
             
-            # Usar mana potion si está baja Y hay potiones
+            # Usar mana potion solo si está realmente baja Y hay potiones
             if self.mana < self.mana_threshold and self.mana_potions > 0:
-                # Usar tecla específica para evitar controles de volumen
-                keyboard.press_and_release(self.hotkeys['mana'])
-                self.mana_potions -= 1
-                self.mana = min(100, self.mana + 25)
-                self.log_to_gui(f"🔮 Mana potion used! Mana: {self.mana}% (Potions left: {self.mana_potions})")
-                return True
+                # Verificar que realmente necesita mana (no confundir con mana del enemigo)
+                if self.mana < 40:  # Solo usar si mana < 40%
+                    keyboard.press_and_release(self.hotkeys['mana'])
+                    self.mana_potions -= 1
+                    self.mana = min(100, self.mana + 25)
+                    self.log_to_gui(f"🔮 Mana potion used! Mana: {self.mana}% (Potions left: {self.mana_potions})")
+                    return True
+                else:
+                    self.log_to_gui(f"⚠️ Mana is {self.mana}% - not low enough to waste potion")
+                    return False
             elif self.mana < self.mana_threshold and self.mana_potions <= 0:
                 self.log_to_gui(f"⚠️ Low mana ({self.mana}%) but no potions available!")
+                return False
+            elif self.mana >= self.mana_threshold:
+                self.log_to_gui(f"✅ Mana is good: {self.mana}% - no need for potion")
                 return False
                 
             return False
