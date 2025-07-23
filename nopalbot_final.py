@@ -133,7 +133,7 @@ class NopalBotIntelligent:
             'next_target': 'SPACE',  # SPACE para seleccionar siguiente objetivo
             'heal': 'F1',
             'mana': 'F2', 
-            'food': 'F6',  # Comida automática
+            'food': 'F12',  # Comida automática
             'spell1': 'F3',  # Exori vis
             'spell2': 'F4',  # Exura
             'loot': 'F5',
@@ -159,7 +159,7 @@ class NopalBotIntelligent:
         
     def setup_hotkeys(self):
         # Hotkeys globales para pausar/parar
-        keyboard.add_hotkey('f12', self.stop_bot)
+        keyboard.add_hotkey('f10', self.stop_bot)
         keyboard.add_hotkey('f11', self.toggle_pause)
         
     def log_to_gui(self, message):
@@ -712,7 +712,7 @@ class NopalBotIntelligent:
     def stop_bot(self):
         """Detener el bot completamente"""
         self.running = False
-        self.log_to_gui("🛑 Bot stopped by F12")
+        self.log_to_gui("🛑 Bot stopped by F10")
         
     def run_bot(self):
         """Ejecutar el bot principal"""
@@ -722,7 +722,7 @@ class NopalBotIntelligent:
             self.log_to_gui(f"🎭 Vocation: {self.character_vocation}")
             self.log_to_gui(f"❤️ Heal threshold: {self.heal_threshold}%")
             self.log_to_gui(f"🔮 Mana threshold: {self.mana_threshold}%")
-            self.log_to_gui("🎮 Press F11 to pause/resume, F12 to stop")
+            self.log_to_gui("🎮 Press F11 to pause/resume, F10 to stop")
             
             if not self.find_tibia_window():
                 self.log_to_gui("❌ Cannot find Tibia window!")
@@ -851,7 +851,7 @@ class NopalBotGUI:
         🎯 Next Target: SPACE
         ❤️ Heal: F1
         🔮 Mana: F2
-        🍖 Food: F6
+        🍖 Food: F12
         ⚡ Spell 1: F3 (Exori vis)
         🛡️ Spell 2: F4 (Exura)
         💰 Loot: F5
@@ -859,7 +859,7 @@ class NopalBotGUI:
         🚶 Movement: WASD
         👁️ Face Enemy: CTRL
         ⏸️ Pause/Resume: F11
-        🛑 Stop Bot: F12
+        🛑 Stop Bot: F10
         """
         
         hotkey_label = ctk.CTkLabel(hotkey_frame, text=hotkeys_text, 
