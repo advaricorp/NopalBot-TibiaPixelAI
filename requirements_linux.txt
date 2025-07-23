@@ -2,7 +2,7 @@
 # By Taquito Loco 🎮
 
 # Core dependencies
-rich>=13.0.0
+rich>=13.0.0KKKKKK
 customtkinter>=5.2.0
 opencv-python>=4.8.0
 keyboard>=0.13.5
