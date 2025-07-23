@@ -1,0 +1,45 @@
+# Cursor Rules for PBT Tibia Bot Project
+
+## Python Environment Management
+- ALWAYS activate the virtual environment before running any Python script
+- Check if requirements are installed before executing scripts
+- Use `.\venv\Scripts\activate` to activate the virtual environment
+- Use `pip install -r requirements.txt` if dependencies are missing
+
+## Script Execution Protocol
+When running any Python script:
+1. First check if virtual environment exists
+2. Activate virtual environment: `.\venv\Scripts\activate`
+3. Verify requirements are installed: `pip install -r requirements.txt`
+4. Then execute the Python script
+
+## Project Structure
+- Main bot executable: `tibia_bot_exe.py`
+- CLI interface: `run_bot_cli.py`
+- GUI interface: `start_bot.py`
+- Testing script: `test_all_features.py`
+- Build script: `build_exe.py`
+
+## Dependencies
+All scripts require these modules:
+- rich (for CLI interface)
+- customtkinter (for GUI)
+- opencv-python (for image processing)
+- keyboard, mouse, pynput (for input control)
+- pyautogui, mss (for screen capture)
+- pywin32 (for Windows API)
+
+## Testing
+- Always run tests with virtual environment activated
+- Use `test_all_features.py` for comprehensive testing
+- Ensure Tibia is running before testing bot features
+
+## Build Process
+- Use `build_exe.py` to create executable
+- Executable should work without Python installation
+- Include all dependencies in the build
+
+## Error Handling
+- If "No module named X" error occurs, install missing dependencies
+- If virtual environment not found, create it first
+- Always provide clear error messages and solutions 

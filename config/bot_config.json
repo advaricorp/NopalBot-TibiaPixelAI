@@ -1,0 +1,69 @@
+{
+  "bot_settings": {
+    "profession": "knight",
+    "auto_attack": true,
+    "auto_movement": true,
+    "auto_loot": true,
+    "spells_enabled": true,
+    "emergency_spells": true,
+    "movement_type": "patrol",
+    "attack_range": "melee",
+    "loot_priority": "gold_only"
+  },
+  "hotkeys": {
+    "attack": "space",
+    "loot": "f4",
+    "movement_up": "w",
+    "movement_down": "s",
+    "movement_left": "a",
+    "movement_right": "d",
+    "emergency_kill": "f12",
+    "pause": "f1",
+    "stop": "f2"
+  },
+  "spells": {
+    "knight": {
+      "healing": ["exura", "exura gran", "exura ico"],
+      "support": ["utani hur", "utani gran hur"],
+      "emergency": ["exura vita", "exura gran ico"]
+    },
+    "paladin": {
+      "healing": ["exura", "exura san"],
+      "support": ["utani hur", "utani gran hur"],
+      "emergency": ["exura vita", "exura gran san"]
+    },
+    "sorcerer": {
+      "healing": ["exura", "exura gran"],
+      "support": ["utani hur", "utani gran hur"],
+      "emergency": ["exura vita", "exura gran"]
+    },
+    "druid": {
+      "healing": ["exura", "exura gran"],
+      "support": ["utani hur", "utani gran hur"],
+      "emergency": ["exura vita", "exura gran"]
+    },
+    "mage": {
+      "healing": ["exura", "exura gran"],
+      "support": ["utani hur", "utani gran hur"],
+      "emergency": ["exura vita", "exura gran"]
+    }
+  },
+  "movement_patterns": {
+    "patrol": ["w", "a", "s", "d"],
+    "stair_up": ["w"],
+    "stair_down": ["s"],
+    "random": ["w", "a", "s", "d"]
+  },
+  "thresholds": {
+    "health_low": 30,
+    "health_medium": 50,
+    "mana_low": 20,
+    "mana_medium": 40
+  },
+  "timing": {
+    "attack_cooldown": 1.0,
+    "movement_cooldown": 0.5,
+    "loot_cooldown": 2.0,
+    "spell_cooldown": 3.0
+  }
+}

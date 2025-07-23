@@ -1,0 +1,124 @@
+version: '3.8'
+
+services:
+  # PBT Bot Manager (main service)
+  pbt-manager:
+    build: .
+    container_name: pbt-manager
+    environment:
+      - BOT_COUNT=1
+      - BOT_NAME=manager
+      - BOT_PREFIX=manager
+      - ENABLE_VNC=true
+    volumes:
+      - ./config:/home/pbtuser/pbt_bot/config
+      - ./logs:/home/pbtuser/pbt_bot/logs
+      - ./data:/home/pbtuser/pbt_bot/data
+    ports:
+      - "5901:5901"  # VNC
+      - "8080:8080"  # Web interface (if added later)
+    restart: unless-stopped
+    networks:
+      - pbt-network
+
+  # PBT Bot Instance 1
+  pbt-bot-1:
+    build: .
+    container_name: pbt-bot-1
+    environment:
+      - BOT_COUNT=1
+      - BOT_NAME=bot1
+      - BOT_PREFIX=bot
+      - ENABLE_VNC=false
+    volumes:
+      - ./config:/home/pbtuser/pbt_bot/config
+      - ./logs:/home/pbtuser/pbt_bot/logs
+      - ./data:/home/pbtuser/pbt_bot/data
+    restart: unless-stopped
+    networks:
+      - pbt-network
+    depends_on:
+      - pbt-manager
+
+  # PBT Bot Instance 2
+  pbt-bot-2:
+    build: .
+    container_name: pbt-bot-2
+    environment:
+      - BOT_COUNT=1
+      - BOT_NAME=bot2
+      - BOT_PREFIX=bot
+      - ENABLE_VNC=false
+    volumes:
+      - ./config:/home/pbtuser/pbt_bot/config
+      - ./logs:/home/pbtuser/pbt_bot/logs
+      - ./data:/home/pbtuser/pbt_bot/data
+    restart: unless-stopped
+    networks:
+      - pbt-network
+    depends_on:
+      - pbt-manager
+
+  # PBT Bot Instance 3
+  pbt-bot-3:
+    build: .
+    container_name: pbt-bot-3
+    environment:
+      - BOT_COUNT=1
+      - BOT_NAME=bot3
+      - BOT_PREFIX=bot
+      - ENABLE_VNC=false
+    volumes:
+      - ./config:/home/pbtuser/pbt_bot/config
+      - ./logs:/home/pbtuser/pbt_bot/logs
+      - ./data:/home/pbtuser/pbt_bot/data
+    restart: unless-stopped
+    networks:
+      - pbt-network
+    depends_on:
+      - pbt-manager
+
+  # PBT Bot Instance 4
+  pbt-bot-4:
+    build: .
+    container_name: pbt-bot-4
+    environment:
+      - BOT_COUNT=1
+      - BOT_NAME=bot4
+      - BOT_PREFIX=bot
+      - ENABLE_VNC=false
+    volumes:
+      - ./config:/home/pbtuser/pbt_bot/config
+      - ./logs:/home/pbtuser/pbt_bot/logs
+      - ./data:/home/pbtuser/pbt_bot/data
+    restart: unless-stopped
+    networks:
+      - pbt-network
+    depends_on:
+      - pbt-manager
+
+  # PBT Bot Instance 5
+  pbt-bot-5:
+    build: .
+    container_name: pbt-bot-5
+    environment:
+      - BOT_COUNT=1
+      - BOT_NAME=bot5
+      - BOT_PREFIX=bot
+      - ENABLE_VNC=false
+    volumes:
+      - ./config:/home/pbtuser/pbt_bot/config
+      - ./logs:/home/pbtuser/pbt_bot/logs
+      - ./data:/home/pbtuser/pbt_bot/data
+    restart: unless-stopped
+    networks:
+      - pbt-network
+    depends_on:
+      - pbt-manager
+
+networks:
+  pbt-network:
+    driver: bridge
+
+volumes:
+  pbt-data: 
