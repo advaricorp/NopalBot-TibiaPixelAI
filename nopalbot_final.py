@@ -116,12 +116,16 @@ class NopalBotIntelligent:
         # Contadores de potiones
         self.health_potions = 10  # Simular 10 potiones
         self.mana_potions = 10    # Simular 10 potiones
+        self.food_count = 20      # Simular 20 comidas
         self.last_potion_check = 0
+        self.last_food_check = 0
         
         # Estado de movimiento
-        self.movement_state = "forward"  # forward, stuck, avoiding
+        self.movement_state = "forward"  # forward, stuck, avoiding, exploring
         self.stuck_counter = 0
         self.last_position = None
+        self.exploration_pattern = 0  # Para patrones de exploración
+        self.last_exploration_change = 0
         
         # Configuración para druida
         self.hotkeys = {
@@ -129,6 +133,7 @@ class NopalBotIntelligent:
             'next_target': 'SPACE',  # SPACE para seleccionar siguiente objetivo
             'heal': 'F1',
             'mana': 'F2', 
+            'food': 'F6',  # Comida automática
             'spell1': 'F3',  # Exori vis
             'spell2': 'F4',  # Exura
             'loot': 'F5',
@@ -293,6 +298,43 @@ class NopalBotIntelligent:
                 
         except Exception as e:
             self.log_to_gui(f"❌ Error checking potions: {e}")
+            
+    def check_food_available(self):
+        """Verifica si hay comida disponible"""
+        try:
+            current_time = time.time()
+            if current_time - self.last_food_check > 3.0:  # Verificar cada 3 segundos
+                
+                # Simular detección de comida (en un bot real, esto sería OCR)
+                if random.random() < 0.05:  # 5% chance de quedarse sin comida
+                    if self.food_count <= 0:
+                        self.food_count = random.randint(10, 30)
+                        self.log_to_gui(f"🍖 Found {self.food_count} food items!")
+                        
+                self.last_food_check = current_time
+                
+        except Exception as e:
+            self.log_to_gui(f"❌ Error checking food: {e}")
+            
+    def automatic_food(self):
+        """Consumo automático de comida"""
+        try:
+            # Verificar comida disponible
+            self.check_food_available()
+            
+            # Usar comida automáticamente si hay disponible
+            if self.food_count > 0:
+                keyboard.press_and_release(self.hotkeys['food'])
+                self.food_count -= 1
+                self.log_to_gui(f"🍖 Food consumed! Food left: {self.food_count}")
+                return True
+            else:
+                self.log_to_gui(f"⚠️ No food available!")
+                return False
+                
+        except Exception as e:
+            self.log_to_gui(f"❌ Error consuming food: {e}")
+            return False
             
     def find_closest_enemy_visual(self):
         """Detección visual de enemigos usando OpenCV SOLO dentro de Tibia"""
@@ -530,7 +572,7 @@ class NopalBotIntelligent:
             return False
             
     def smart_movement(self):
-        """Movimiento inteligente WASD con detección de obstáculos"""
+        """Movimiento inteligente WASD con exploración de mapa"""
         try:
             current_time = time.time()
             if current_time - self.last_movement > 1.0:  # Mover cada 1 segundo
@@ -545,7 +587,7 @@ class NopalBotIntelligent:
                 else:
                     self.stuck_counter = 0
                     if self.movement_state == "stuck":
-                        self.movement_state = "forward"
+                        self.movement_state = "exploring"
                         
                 self.last_position = current_pos
                 
@@ -570,10 +612,41 @@ class NopalBotIntelligent:
                     movement = random.choice(movements)
                     self.log_to_gui(f"🔄 Avoiding pattern: {movement}")
                     
-                    # Volver a forward después de un tiempo
+                    # Volver a exploración después de un tiempo
                     if random.random() < 0.3:
-                        self.movement_state = "forward"
-                        self.log_to_gui("✅ Back to forward movement")
+                        self.movement_state = "exploring"
+                        self.log_to_gui("🗺️ Switching to exploration mode")
+                        
+                elif self.movement_state == "exploring":
+                    # Exploración inteligente del mapa
+                    if current_time - self.last_exploration_change > 5.0:  # Cambiar patrón cada 5 segundos
+                        self.exploration_pattern = (self.exploration_pattern + 1) % 4
+                        self.last_exploration_change = current_time
+                        
+                    # Diferentes patrones de exploración
+                    if self.exploration_pattern == 0:
+                        # Patrón en espiral
+                        movements = ['S', 'D', 'W', 'A']
+                        movement = movements[self.stuck_counter % 4]
+                        self.log_to_gui(f"🗺️ Spiral exploration: {movement}")
+                        
+                    elif self.exploration_pattern == 1:
+                        # Patrón en zigzag
+                        movements = ['S', 'A', 'S', 'D']
+                        movement = movements[self.stuck_counter % 4]
+                        self.log_to_gui(f"🗺️ Zigzag exploration: {movement}")
+                        
+                    elif self.exploration_pattern == 2:
+                        # Patrón en cuadrado
+                        movements = ['S', 'D', 'W', 'A']
+                        movement = movements[(self.stuck_counter // 3) % 4]
+                        self.log_to_gui(f"🗺️ Square exploration: {movement}")
+                        
+                    else:
+                        # Patrón aleatorio
+                        movements = ['W', 'A', 'S', 'D']
+                        movement = random.choice(movements)
+                        self.log_to_gui(f"🗺️ Random exploration: {movement}")
                 
                 # Ejecutar movimiento
                 keyboard.press_and_release(movement)
@@ -599,27 +672,31 @@ class NopalBotIntelligent:
     def combat_action(self):
         """Acción principal de combate"""
         try:
-            # Prioridad: Quick loot > Healing > Mana > Attack > Spells > Movement
+            # Prioridad: Quick loot > Food > Healing > Mana > Attack > Spells > Movement
             
             # 1. Quick loot
             if self.automatic_quick_loot():
                 return
                 
-            # 2. Healing
+            # 2. Food (nueva prioridad)
+            if self.automatic_food():
+                return
+                
+            # 3. Healing
             if self.intelligent_healing():
                 return
                 
-            # 3. Mana
+            # 4. Mana
             if self.intelligent_mana():
                 return
                 
-            # 4. Attack
+            # 5. Attack
             if self.intelligent_attack():
-                # 5. Spells después de atacar
+                # 6. Spells después de atacar
                 self.intelligent_spells()
                 return
                 
-            # 6. Movement si no hay enemigos
+            # 7. Movement si no hay enemigos
             if not self.enemy_detected:
                 self.smart_movement()
                 
@@ -774,6 +851,7 @@ class NopalBotGUI:
         🎯 Next Target: SPACE
         ❤️ Heal: F1
         🔮 Mana: F2
+        🍖 Food: F6
         ⚡ Spell 1: F3 (Exori vis)
         🛡️ Spell 2: F4 (Exura)
         💰 Loot: F5
