@@ -136,10 +136,23 @@ class NopalBotIntelligent:
             'food': 'F12',  # Comida automática
             'spell1': 'F3',  # Exori vis
             'spell2': 'F4',  # Exura
+            'rune': 'R',  # Runa para sorcerer
             'loot': 'F5',
             'quick_loot': '0',
             'movement': ['W', 'A', 'S', 'D'],
             'face_enemy': 'CTRL'
+        }
+        
+        # Sistema de movimiento inteligente para tumbas
+        self.movement_state = {
+            'current_direction': 'S',  # Dirección actual (W/A/S/D)
+            'stuck_counter': 0,  # Contador de veces que se traba
+            'last_position': None,  # Última posición conocida
+            'stuck_threshold': 5,  # Segundos antes de cambiar dirección
+            'last_movement_time': time.time(),
+            'tomb_mode': True,  # Modo tumba activado
+            'direction_sequence': ['S', 'D', 'W', 'A'],  # Secuencia de direcciones para tumbas
+            'current_direction_index': 0
         }
         
         # Configurar pyautogui
@@ -570,86 +583,64 @@ class NopalBotIntelligent:
         except Exception as e:
             self.log_to_gui(f"❌ Error in quick loot: {e}")
             return False
+    
+    def intelligent_runes(self):
+        """Lanzar runas inteligentemente (para sorcerer)"""
+        try:
+            if self.mana < self.spell_mana_threshold:
+                return False
+                
+            # Solo lanzar runas si hay enemigos cerca
+            if not self.find_closest_enemy_visual():
+                return False
+                
+            # Lanzar runa (R)
+            keyboard.press_and_release(self.hotkeys['rune'])
+            self.log_to_gui(f"💎 Casting rune {self.hotkeys['rune']}")
+            time.sleep(0.3)
+            
+            return True
+            
+        except Exception as e:
+            self.log_to_gui(f"❌ Error casting runes: {e}")
+            return False
             
     def smart_movement(self):
-        """Movimiento inteligente WASD con exploración de mapa"""
+        """Movimiento inteligente para tumbas de Ankrahmun - líneas rectas"""
         try:
             current_time = time.time()
-            if current_time - self.last_movement > 1.0:  # Mover cada 1 segundo
+            if current_time - self.last_movement > 0.8:  # Mover cada 0.8 segundos en tumbas
                 
-                # Detectar si está atascado
-                current_pos = pyautogui.position()
-                if self.last_position and current_pos == self.last_position:
-                    self.stuck_counter += 1
-                    if self.stuck_counter > 3:
-                        self.movement_state = "stuck"
-                        self.log_to_gui("🚧 Detected stuck! Changing movement pattern...")
-                else:
-                    self.stuck_counter = 0
-                    if self.movement_state == "stuck":
-                        self.movement_state = "exploring"
-                        
-                self.last_position = current_pos
+                # Verificar si se traba (no se mueve por X segundos)
+                if (self.movement_state['last_position'] and 
+                    current_time - self.movement_state['last_movement_time'] > self.movement_state['stuck_threshold']):
+                    
+                    self.movement_state['stuck_counter'] += 1
+                    self.log_to_gui(f"🚧 Stuck detected! Trying new direction... (Attempt {self.movement_state['stuck_counter']})")
+                    
+                    # Cambiar a siguiente dirección en la secuencia
+                    self.movement_state['current_direction_index'] = (self.movement_state['current_direction_index'] + 1) % len(self.movement_state['direction_sequence'])
+                    self.movement_state['current_direction'] = self.movement_state['direction_sequence'][self.movement_state['current_direction_index']]
+                    
+                    self.log_to_gui(f"🔄 Switching to direction: {self.movement_state['current_direction']}")
+                    self.movement_state['last_movement_time'] = current_time
+                    
+                    # Si se traba mucho, probar dirección opuesta
+                    if self.movement_state['stuck_counter'] >= 3:
+                        opposite_directions = {'S': 'W', 'W': 'S', 'A': 'D', 'D': 'A'}
+                        self.movement_state['current_direction'] = opposite_directions.get(self.movement_state['current_direction'], 'S')
+                        self.log_to_gui(f"🔄 Trying opposite direction: {self.movement_state['current_direction']}")
+                        self.movement_state['stuck_counter'] = 0
                 
-                # Lógica de movimiento según el estado
-                if self.movement_state == "forward":
-                    # Movimiento hacia adelante (S)
-                    movement = 'S'
-                    self.log_to_gui(f"🚶 Moving forward: {movement}")
-                    
-                elif self.movement_state == "stuck":
-                    # Patrón de evasión cuando está atascado
-                    movements = ['W', 'A', 'D']  # Evitar S (atrás)
-                    movement = random.choice(movements)
-                    self.log_to_gui(f"🔄 Avoiding obstacle: {movement}")
-                    
-                    # Cambiar a estado de evasión
-                    self.movement_state = "avoiding"
-                    
-                elif self.movement_state == "avoiding":
-                    # Movimiento en círculos para evitar obstáculos
-                    movements = ['W', 'A', 'D']
-                    movement = random.choice(movements)
-                    self.log_to_gui(f"🔄 Avoiding pattern: {movement}")
-                    
-                    # Volver a exploración después de un tiempo
-                    if random.random() < 0.3:
-                        self.movement_state = "exploring"
-                        self.log_to_gui("🗺️ Switching to exploration mode")
-                        
-                elif self.movement_state == "exploring":
-                    # Exploración inteligente del mapa
-                    if current_time - self.last_exploration_change > 5.0:  # Cambiar patrón cada 5 segundos
-                        self.exploration_pattern = (self.exploration_pattern + 1) % 4
-                        self.last_exploration_change = current_time
-                        
-                    # Diferentes patrones de exploración
-                    if self.exploration_pattern == 0:
-                        # Patrón en espiral
-                        movements = ['S', 'D', 'W', 'A']
-                        movement = movements[self.stuck_counter % 4]
-                        self.log_to_gui(f"🗺️ Spiral exploration: {movement}")
-                        
-                    elif self.exploration_pattern == 1:
-                        # Patrón en zigzag
-                        movements = ['S', 'A', 'S', 'D']
-                        movement = movements[self.stuck_counter % 4]
-                        self.log_to_gui(f"🗺️ Zigzag exploration: {movement}")
-                        
-                    elif self.exploration_pattern == 2:
-                        # Patrón en cuadrado
-                        movements = ['S', 'D', 'W', 'A']
-                        movement = movements[(self.stuck_counter // 3) % 4]
-                        self.log_to_gui(f"🗺️ Square exploration: {movement}")
-                        
-                    else:
-                        # Patrón aleatorio
-                        movements = ['W', 'A', 'S', 'D']
-                        movement = random.choice(movements)
-                        self.log_to_gui(f"🗺️ Random exploration: {movement}")
+                # Ejecutar movimiento en la dirección actual
+                direction = self.movement_state['current_direction']
+                keyboard.press_and_release(direction.lower())
                 
-                # Ejecutar movimiento
-                keyboard.press_and_release(movement)
+                # Actualizar posición y tiempo
+                self.movement_state['last_position'] = self.get_character_position()
+                self.movement_state['last_movement_time'] = current_time
+                
+                self.log_to_gui(f"🚶 Moving {direction} in tomb")
                 self.last_movement = current_time
                 return True
                 
@@ -658,6 +649,12 @@ class NopalBotIntelligent:
         except Exception as e:
             self.log_to_gui(f"❌ Error in movement: {e}")
             return False
+    
+    def get_character_position(self):
+        """Obtener posición aproximada del personaje (simulado)"""
+        # En una implementación real, esto detectaría la posición del personaje
+        # Por ahora, simulamos una posición
+        return {'x': random.randint(1, 100), 'y': random.randint(1, 100)}
             
     def face_enemy(self):
         """Mirar hacia el enemigo"""
@@ -672,7 +669,7 @@ class NopalBotIntelligent:
     def combat_action(self):
         """Acción principal de combate"""
         try:
-            # Prioridad: Quick loot > Food > Healing > Mana > Attack > Spells > Movement
+            # Prioridad: Quick loot > Food > Healing > Mana > Attack > Spells > Runes > Movement
             
             # 1. Quick loot
             if self.automatic_quick_loot():
@@ -694,9 +691,11 @@ class NopalBotIntelligent:
             if self.intelligent_attack():
                 # 6. Spells después de atacar
                 self.intelligent_spells()
+                # 7. Runes para sorcerer
+                self.intelligent_runes()
                 return
                 
-            # 7. Movement si no hay enemigos
+            # 8. Movement si no hay enemigos
             if not self.enemy_detected:
                 self.smart_movement()
                 
@@ -854,9 +853,10 @@ class NopalBotGUI:
         🍖 Food: F12
         ⚡ Spell 1: F3 (Exori vis)
         🛡️ Spell 2: F4 (Exura)
+        💎 Rune: R (Sorcerer)
         💰 Loot: F5
         🎁 Quick Loot: 0
-        🚶 Movement: WASD
+        🚶 Movement: WASD (Tomb Mode)
         👁️ Face Enemy: CTRL
         ⏸️ Pause/Resume: F11
         🛑 Stop Bot: F10
