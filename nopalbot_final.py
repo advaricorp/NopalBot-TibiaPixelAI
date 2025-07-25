@@ -204,22 +204,24 @@ class NopalBotIntelligent:
             self.gui_callback(message)
             
     def find_tibia_window(self):
-        """Busca la ventana de Tibia y la activa"""
+        """Encontrar y configurar la ventana de Tibia"""
         try:
             # Buscar ventana de Tibia
-            windows = pyautogui.getWindowsWithTitle("Tibia")
-            if windows:
-                self.tibia_window = windows[0]
-                self.tibia_window.activate()
-                time.sleep(0.5)
+            self.tibia_window = win32gui.FindWindow(None, "Tibia")
+            
+            if self.tibia_window:
+                # Obtener información de la ventana
+                rect = win32gui.GetWindowRect(self.tibia_window)
+                self.tibia_left = rect[0]
+                self.tibia_top = rect[1]
+                self.tibia_width = rect[2] - rect[0]
+                self.tibia_height = rect[3] - rect[1]
                 
-                # Obtener coordenadas de la ventana
-                self.tibia_left = self.tibia_window.left
-                self.tibia_top = self.tibia_window.top
-                self.tibia_width = self.tibia_window.width
-                self.tibia_height = self.tibia_window.height
+                # Activar la ventana de Tibia
+                win32gui.SetForegroundWindow(self.tibia_window)
+                win32gui.ShowWindow(self.tibia_window, win32con.SW_RESTORE)
                 
-                self.log_to_gui(f"🎮 Tibia window found: {self.tibia_window.title}")
+                self.log_to_gui("✅ Tibia window found and activated!")
                 self.log_to_gui(f"📍 Position: ({self.tibia_left}, {self.tibia_top})")
                 self.log_to_gui(f"📏 Size: {self.tibia_width}x{self.tibia_height}")
                 
@@ -231,6 +233,20 @@ class NopalBotIntelligent:
                 return False
         except Exception as e:
             self.log_to_gui(f"❌ Error finding Tibia: {e}")
+            return False
+    
+    def activate_tibia_window(self):
+        """Activar la ventana de Tibia antes de enviar inputs"""
+        try:
+            if self.tibia_window:
+                # Activar la ventana
+                win32gui.SetForegroundWindow(self.tibia_window)
+                win32gui.ShowWindow(self.tibia_window, win32con.SW_RESTORE)
+                time.sleep(0.1)  # Pequeña pausa para asegurar activación
+                return True
+            return False
+        except Exception as e:
+            self.log_to_gui(f"❌ Error activating Tibia window: {e}")
             return False
             
     def detect_character_info(self):
@@ -353,23 +369,32 @@ class NopalBotIntelligent:
             self.log_to_gui(f"❌ Error checking food: {e}")
             
     def automatic_food(self):
-        """Consumo automático de comida"""
+        """Comida automática"""
         try:
-            # Verificar comida disponible
-            self.check_food_available()
-            
-            # Usar comida automáticamente si hay disponible
-            if self.food_count > 0:
-                keyboard.press_and_release(self.hotkeys['food'])
-                self.food_count -= 1
-                self.log_to_gui(f"🍖 Food consumed! Food left: {self.food_count}")
-                return True
-            else:
-                self.log_to_gui(f"⚠️ No food available!")
+            # Activar ventana de Tibia primero
+            if not self.activate_tibia_window():
+                self.log_to_gui("❌ Cannot activate Tibia window for food")
                 return False
+            
+            current_time = time.time()
+            if current_time - self.last_food > 3.0:  # Comer cada 3 segundos
                 
+                if self.food_count > 0:
+                    # Usar comida (F12)
+                    keyboard.press_and_release('f12')
+                    self.food_count -= 1
+                    self.log_to_gui(f"🍖 Food consumed! Food left: {self.food_count}")
+                    self.last_food = current_time
+                    time.sleep(0.5)
+                    return True
+                else:
+                    self.log_to_gui("⚠️ No food left!")
+                    return False
+                    
+            return False
+            
         except Exception as e:
-            self.log_to_gui(f"❌ Error consuming food: {e}")
+            self.log_to_gui(f"❌ Error in food: {e}")
             return False
             
     def find_closest_enemy_visual(self):
@@ -443,124 +468,161 @@ class NopalBotIntelligent:
             return False
             
     def intelligent_attack(self):
-        """Ataque inteligente con SPACE para next target y CTRL+SPACE para atacar"""
+        """Ataque inteligente con sistema de triple check"""
         try:
-            enemy_pos = self.find_closest_enemy_visual()
+            self.log_to_gui("⚔️ Starting intelligent attack sequence...")
             
-            if enemy_pos:
-                x, y = enemy_pos
+            # Buscar enemigo visualmente
+            enemy_found = self.find_closest_enemy_visual()
+            
+            if enemy_found:
+                self.log_to_gui("🎯 Enemy found! Executing attack sequence...")
                 
-                # Hacer clic en el enemigo
-                pyautogui.click(x, y)
-                self.log_to_gui(f"🎯 Clicked within Tibia at ({x}, {y})")
-                time.sleep(0.2)
+                # PASO 1: Click en el enemigo
+                enemy_x, enemy_y = enemy_found
+                if not self.send_mouse_click(enemy_x, enemy_y, "Click on enemy"):
+                    self.log_to_gui("❌ Failed to click on enemy")
+                    return False
                 
-                # Presionar SPACE para seleccionar objetivo
-                keyboard.press_and_release(self.hotkeys['next_target'])
-                self.log_to_gui(f"🎯 Next target selected with {self.hotkeys['next_target']}")
-                time.sleep(0.2)
+                time.sleep(0.3)  # Pausa para que Tibia procese el click
                 
-                # Presionar CTRL+SPACE para atacar múltiples veces
-                for i in range(8):  # Más ataques
-                    if not self.running or self.paused:
-                        break
-                    # Presionar CTRL + SPACE
-                    keyboard.press('CTRL')
-                    keyboard.press_and_release('SPACE')
-                    keyboard.release('CTRL')
-                    self.log_to_gui(f"⚔️ ATTACKING with CTRL+SPACE - Hit {i+1}")
-                    time.sleep(0.1)
-                    
-                self.log_to_gui("⚔️ ATTACK SEQUENCE COMPLETED!")
-                return True
-            else:
-                # Si no encuentra enemigo visual, intentar con SPACE para buscar
-                self.log_to_gui("🔍 No enemies found visually, trying SPACE to find target...")
-                keyboard.press_and_release(self.hotkeys['next_target'])
-                time.sleep(0.2)
-                
-                # Intentar atacar de todas formas con CTRL+SPACE
+                # PASO 2: SPACE (next target) - Triple check
+                self.log_to_gui("🎯 Sending SPACE (next target)...")
                 for i in range(3):
-                    if not self.running or self.paused:
-                        break
-                    keyboard.press('CTRL')
-                    keyboard.press_and_release('SPACE')
-                    keyboard.release('CTRL')
-                    self.log_to_gui(f"⚔️ BLIND ATTACK with CTRL+SPACE - Hit {i+1}")
+                    if not self.send_keyboard_input('space', f"Next target {i+1}"):
+                        self.log_to_gui(f"❌ Failed to send SPACE {i+1}")
+                        return False
                     time.sleep(0.1)
+                
+                # PASO 3: CTRL+SPACE (attack) - Triple check
+                self.log_to_gui("⚔️ Sending CTRL+SPACE (attack)...")
+                for i in range(5):
+                    # Activar ventana antes de cada ataque
+                    if not self.activate_tibia_window():
+                        self.log_to_gui(f"❌ Cannot activate window for attack {i+1}")
+                        return False
                     
+                    # Enviar CTRL+SPACE
+                    keyboard.press('ctrl')
+                    keyboard.press_and_release('space')
+                    keyboard.release('ctrl')
+                    self.log_to_gui(f"⚔️ Attack {i+1}: CTRL+SPACE sent to Tibia")
+                    time.sleep(0.1)
+                
+                self.log_to_gui("✅ Attack sequence completed successfully!")
+                return True
+                
+            else:
+                # Ataque ciego si no encuentra enemigo
+                self.log_to_gui("👻 No enemy detected, performing blind attack...")
+                
+                # PASO 1: SPACE (next target)
+                if not self.send_keyboard_input('space', "Blind next target"):
+                    return False
+                
+                time.sleep(0.2)
+                
+                # PASO 2: CTRL+SPACE (attack)
+                if not self.activate_tibia_window():
+                    return False
+                
+                keyboard.press('ctrl')
+                keyboard.press_and_release('space')
+                keyboard.release('ctrl')
+                self.log_to_gui("⚔️ Blind attack: CTRL+SPACE sent to Tibia")
+                
                 return True
                 
         except Exception as e:
-            self.log_to_gui(f"❌ Error in attack: {e}")
+            self.log_to_gui(f"❌ Error in intelligent attack: {e}")
             return False
             
     def intelligent_healing(self):
-        """Curación inteligente con detección de potiones"""
+        """Curación inteligente con sistema de triple check"""
         try:
-            # Verificar potiones disponibles
-            self.check_potions_available()
+            self.log_to_gui("❤️ Starting intelligent healing...")
             
             # Detectar vida real
             self.detect_health_mana_from_screen()
             
-            # Curar solo si la vida está realmente baja Y hay potiones
             if self.health < self.heal_threshold and self.health_potions > 0:
-                # Verificar que realmente necesita curación (no confundir con vida del enemigo)
-                if self.health < 50:  # Solo curar si vida < 50%
-                    keyboard.press_and_release(self.hotkeys['heal'])
+                # Triple check para healing
+                self.log_to_gui("❤️ Sending healing input...")
+                
+                # CHECK 1: Verificar ventana
+                if not self.tibia_window:
+                    self.log_to_gui("❌ CHECK 1 FAILED: No Tibia window for healing")
+                    return False
+                
+                # CHECK 2: Activar ventana
+                if not self.activate_tibia_window():
+                    self.log_to_gui("❌ CHECK 2 FAILED: Cannot activate window for healing")
+                    return False
+                
+                # CHECK 3: Enviar tecla de healing
+                try:
+                    keyboard.press_and_release('f1')
                     self.health_potions -= 1
                     self.health = min(100, self.health + 30)
+                    self.log_to_gui(f"✅ CHECK 3 PASSED: Healing F1 sent to Tibia")
                     self.log_to_gui(f"❤️ Health potion used! Health: {self.health}% (Potions left: {self.health_potions})")
+                    time.sleep(0.5)
                     return True
-                else:
-                    self.log_to_gui(f"⚠️ Health is {self.health}% - not low enough to waste potion")
+                    
+                except Exception as e:
+                    self.log_to_gui(f"❌ CHECK 3 FAILED: Error sending healing F1: {e}")
                     return False
-            elif self.health < self.heal_threshold and self.health_potions <= 0:
-                self.log_to_gui(f"⚠️ Low health ({self.health}%) but no potions available!")
-                return False
-            elif self.health >= self.heal_threshold:
-                self.log_to_gui(f"✅ Health is good: {self.health}% - no need for potion")
+            else:
+                if self.health_potions <= 0:
+                    self.log_to_gui("⚠️ No health potions left!")
                 return False
                 
-            return False
-            
         except Exception as e:
-            self.log_to_gui(f"❌ Error in healing: {e}")
+            self.log_to_gui(f"❌ Error in intelligent healing: {e}")
             return False
             
     def intelligent_mana(self):
-        """Mana inteligente con detección de potiones"""
+        """Mana inteligente con sistema de triple check"""
         try:
-            # Verificar potiones disponibles
-            self.check_potions_available()
+            self.log_to_gui("🔮 Starting intelligent mana...")
             
             # Detectar mana real
             self.detect_health_mana_from_screen()
             
-            # Usar mana potion solo si está realmente baja Y hay potiones
             if self.mana < self.mana_threshold and self.mana_potions > 0:
-                # Verificar que realmente necesita mana (no confundir con mana del enemigo)
-                if self.mana < 40:  # Solo usar si mana < 40%
-                    keyboard.press_and_release(self.hotkeys['mana'])
+                # Triple check para mana
+                self.log_to_gui("🔮 Sending mana input...")
+                
+                # CHECK 1: Verificar ventana
+                if not self.tibia_window:
+                    self.log_to_gui("❌ CHECK 1 FAILED: No Tibia window for mana")
+                    return False
+                
+                # CHECK 2: Activar ventana
+                if not self.activate_tibia_window():
+                    self.log_to_gui("❌ CHECK 2 FAILED: Cannot activate window for mana")
+                    return False
+                
+                # CHECK 3: Enviar tecla de mana
+                try:
+                    keyboard.press_and_release('f2')
                     self.mana_potions -= 1
                     self.mana = min(100, self.mana + 25)
+                    self.log_to_gui(f"✅ CHECK 3 PASSED: Mana F2 sent to Tibia")
                     self.log_to_gui(f"🔮 Mana potion used! Mana: {self.mana}% (Potions left: {self.mana_potions})")
+                    time.sleep(0.5)
                     return True
-                else:
-                    self.log_to_gui(f"⚠️ Mana is {self.mana}% - not low enough to waste potion")
+                    
+                except Exception as e:
+                    self.log_to_gui(f"❌ CHECK 3 FAILED: Error sending mana F2: {e}")
                     return False
-            elif self.mana < self.mana_threshold and self.mana_potions <= 0:
-                self.log_to_gui(f"⚠️ Low mana ({self.mana}%) but no potions available!")
-                return False
-            elif self.mana >= self.mana_threshold:
-                self.log_to_gui(f"✅ Mana is good: {self.mana}% - no need for potion")
+            else:
+                if self.mana_potions <= 0:
+                    self.log_to_gui("⚠️ No mana potions left!")
                 return False
                 
-            return False
-            
         except Exception as e:
-            self.log_to_gui(f"❌ Error in mana: {e}")
+            self.log_to_gui(f"❌ Error in intelligent mana: {e}")
             return False
             
     def intelligent_spells(self):
@@ -629,10 +691,12 @@ class NopalBotIntelligent:
             return False
             
     def smart_movement(self):
-        """Movimiento inteligente para tumbas de Ankrahmun - líneas rectas"""
+        """Movimiento inteligente con sistema de triple check"""
         try:
             current_time = time.time()
             if current_time - self.last_movement > 0.8:  # Mover cada 0.8 segundos en tumbas
+                
+                self.log_to_gui("🚶 Starting smart movement sequence...")
                 
                 # Verificar si se traba (no se mueve por X segundos)
                 if (self.movement_state['last_position'] and 
@@ -657,20 +721,40 @@ class NopalBotIntelligent:
                 
                 # Ejecutar movimiento en la dirección actual
                 direction = self.movement_state['current_direction']
-                keyboard.press_and_release(direction.lower())
                 
-                # Actualizar posición y tiempo
-                self.movement_state['last_position'] = self.get_character_position()
-                self.movement_state['last_movement_time'] = current_time
+                # Triple check para movimiento
+                self.log_to_gui(f"🚶 Sending movement: {direction}")
                 
-                self.log_to_gui(f"🚶 Moving {direction} in tomb")
-                self.last_movement = current_time
-                return True
+                # CHECK 1: Verificar ventana
+                if not self.tibia_window:
+                    self.log_to_gui("❌ CHECK 1 FAILED: No Tibia window for movement")
+                    return False
+                
+                # CHECK 2: Activar ventana
+                if not self.activate_tibia_window():
+                    self.log_to_gui("❌ CHECK 2 FAILED: Cannot activate window for movement")
+                    return False
+                
+                # CHECK 3: Enviar tecla de movimiento
+                try:
+                    keyboard.press_and_release(direction.lower())
+                    self.log_to_gui(f"✅ CHECK 3 PASSED: Movement {direction} sent to Tibia")
+                    
+                    # Actualizar posición y tiempo
+                    self.movement_state['last_position'] = self.get_character_position()
+                    self.movement_state['last_movement_time'] = current_time
+                    self.last_movement = current_time
+                    
+                    return True
+                    
+                except Exception as e:
+                    self.log_to_gui(f"❌ CHECK 3 FAILED: Error sending movement {direction}: {e}")
+                    return False
                 
             return False
             
         except Exception as e:
-            self.log_to_gui(f"❌ Error in movement: {e}")
+            self.log_to_gui(f"❌ Error in smart movement: {e}")
             return False
     
     def get_character_position(self):
@@ -793,6 +877,75 @@ class NopalBotIntelligent:
         # Hotkeys globales para pausar/parar
         keyboard.add_hotkey('f10', self.stop_bot)
         keyboard.add_hotkey('f11', self.toggle_pause)
+
+    def triple_check_tibia_input(self, action_name, input_method, *args):
+        """Sistema de verificación triple para inputs a Tibia"""
+        try:
+            self.log_to_gui(f"🎯 Triple check for {action_name}...")
+            
+            # CHECK 1: Verificar que la ventana existe
+            if not self.tibia_window:
+                self.log_to_gui(f"❌ CHECK 1 FAILED: No Tibia window found for {action_name}")
+                return False
+            
+            # CHECK 2: Activar la ventana
+            if not self.activate_tibia_window():
+                self.log_to_gui(f"❌ CHECK 2 FAILED: Cannot activate Tibia window for {action_name}")
+                return False
+            
+            # CHECK 3: Enviar input y verificar
+            try:
+                result = input_method(*args)
+                self.log_to_gui(f"✅ CHECK 3 PASSED: {action_name} input sent successfully")
+                return result
+            except Exception as e:
+                self.log_to_gui(f"❌ CHECK 3 FAILED: Error sending {action_name} input: {e}")
+                return False
+                
+        except Exception as e:
+            self.log_to_gui(f"❌ Triple check failed for {action_name}: {e}")
+            return False
+    
+    def send_keyboard_input(self, key, description):
+        """Enviar input de teclado con verificación"""
+        try:
+            # Verificar que la ventana esté activa
+            if not self.activate_tibia_window():
+                return False
+            
+            # Enviar tecla
+            keyboard.press_and_release(key)
+            self.log_to_gui(f"⌨️ {description}: {key} sent to Tibia")
+            time.sleep(0.1)
+            return True
+            
+        except Exception as e:
+            self.log_to_gui(f"❌ Error sending keyboard input {key}: {e}")
+            return False
+    
+    def send_mouse_click(self, x, y, description):
+        """Enviar click de mouse con verificación"""
+        try:
+            # Verificar que la ventana esté activa
+            if not self.activate_tibia_window():
+                return False
+            
+            # Verificar que las coordenadas estén dentro de la ventana de Tibia
+            if (self.tibia_left <= x <= self.tibia_left + self.tibia_width and 
+                self.tibia_top <= y <= self.tibia_top + self.tibia_height):
+                
+                # Hacer click
+                pyautogui.click(x, y)
+                self.log_to_gui(f"🖱️ {description}: Click at ({x}, {y}) sent to Tibia")
+                time.sleep(0.1)
+                return True
+            else:
+                self.log_to_gui(f"❌ Click coordinates ({x}, {y}) outside Tibia window")
+                return False
+                
+        except Exception as e:
+            self.log_to_gui(f"❌ Error sending mouse click: {e}")
+            return False
 
 class NopalBotGUI:
     def __init__(self):
