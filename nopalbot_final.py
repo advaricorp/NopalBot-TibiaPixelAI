@@ -94,38 +94,61 @@ class TransparentOverlay:
 
 class NopalBotIntelligent:
     def __init__(self, gui_callback=None):
-        self.setup_logging()
-        self.setup_hotkeys()
+        # Configuración básica
         self.gui_callback = gui_callback
-        self.health = 100
-        self.mana = 100
-        self.level = 1
-        self.character_name = "Unknown"
-        self.character_vocation = "Druid"
-        self.heal_threshold = random.randint(20, 40)
-        self.mana_threshold = random.randint(20, 40)
-        self.spell_mana_threshold = 60
-        self.last_enemy_death = 0
-        self.enemy_detected = False
-        self.combat_mode = False
-        self.movement_direction = 0
-        self.last_movement = 0
         self.running = False
         self.paused = False
         
-        # Contadores de potiones
-        self.health_potions = 10  # Simular 10 potiones
-        self.mana_potions = 10    # Simular 10 potiones
-        self.food_count = 20      # Simular 20 comidas
-        self.last_potion_check = 0
-        self.last_food_check = 0
+        # Variables de estado
+        self.health = 100
+        self.mana = 100
+        self.enemy_detected = False
+        self.last_enemy_death = 0
         
-        # Estado de movimiento
-        self.movement_state = "forward"  # forward, stuck, avoiding, exploring
-        self.stuck_counter = 0
+        # Umbrales
+        self.heal_threshold = 30
+        self.mana_threshold = 30
+        self.spell_mana_threshold = 60
+        
+        # Contadores de potiones
+        self.health_potions = 10
+        self.mana_potions = 10
+        self.food_count = 20
+        
+        # Timers
+        self.last_movement = 0
+        self.last_heal = 0
+        self.last_mana = 0
+        self.last_food = 0
+        self.last_potion_check = 0
+        
+        # Información del personaje
+        self.character_name = "Unknown"
+        self.character_vocation = "Druid"
+        
+        # Variables de movimiento
         self.last_position = None
-        self.exploration_pattern = 0  # Para patrones de exploración
-        self.last_exploration_change = 0
+        self.stuck_counter = 0
+        self.movement_state = "exploring"
+        self.exploration_pattern = 0
+        self.last_exploration_change = time.time()
+        
+        # Variables de ventana de Tibia
+        self.tibia_window = None
+        self.tibia_left = 0
+        self.tibia_top = 0
+        self.tibia_width = 0
+        self.tibia_height = 0
+        
+        # Controles individuales
+        self.auto_walk_enabled = False
+        self.auto_attack_enabled = False
+        self.auto_heal_enabled = False
+        self.auto_mana_enabled = False
+        self.auto_food_enabled = False
+        self.auto_spells_enabled = False
+        self.auto_runes_enabled = False
+        self.auto_loot_enabled = False
         
         # Configuración para druida
         self.hotkeys = {
@@ -667,36 +690,43 @@ class NopalBotIntelligent:
             return False
             
     def combat_action(self):
-        """Acción principal de combate"""
+        """Acción principal de combate con controles individuales"""
         try:
-            # Prioridad: Quick loot > Food > Healing > Mana > Attack > Spells > Runes > Movement
+            # Ejecutar solo las funciones habilitadas
             
-            # 1. Quick loot
-            if self.automatic_quick_loot():
-                return
+            # 1. Auto Loot (si está habilitado)
+            if self.auto_loot_enabled:
+                if self.automatic_quick_loot():
+                    return
                 
-            # 2. Food (nueva prioridad)
-            if self.automatic_food():
-                return
+            # 2. Auto Food (si está habilitado)
+            if self.auto_food_enabled:
+                if self.automatic_food():
+                    return
                 
-            # 3. Healing
-            if self.intelligent_healing():
-                return
+            # 3. Auto Heal (si está habilitado)
+            if self.auto_heal_enabled:
+                if self.intelligent_healing():
+                    return
                 
-            # 4. Mana
-            if self.intelligent_mana():
-                return
+            # 4. Auto Mana (si está habilitado)
+            if self.auto_mana_enabled:
+                if self.intelligent_mana():
+                    return
                 
-            # 5. Attack
-            if self.intelligent_attack():
-                # 6. Spells después de atacar
-                self.intelligent_spells()
-                # 7. Runes para sorcerer
-                self.intelligent_runes()
-                return
+            # 5. Auto Attack (si está habilitado)
+            if self.auto_attack_enabled:
+                if self.intelligent_attack():
+                    # 6. Auto Spells después de atacar (si está habilitado)
+                    if self.auto_spells_enabled:
+                        self.intelligent_spells()
+                    # 7. Auto Runes después de atacar (si está habilitado)
+                    if self.auto_runes_enabled:
+                        self.intelligent_runes()
+                    return
                 
-            # 8. Movement si no hay enemigos
-            if not self.enemy_detected:
+            # 8. Auto Walk (si está habilitado y no hay enemigos)
+            if self.auto_walk_enabled and not self.enemy_detected:
                 self.smart_movement()
                 
         except Exception as e:
@@ -716,12 +746,17 @@ class NopalBotIntelligent:
     def run_bot(self):
         """Ejecutar el bot principal"""
         try:
-            self.log_to_gui("🚀 Starting NopalBot Intelligent...")
+            # Setup inicial
+            self.setup_logging()
+            self.setup_hotkeys()
+            
+            self.log_to_gui("🚀 Starting NopalBot Tomb Edition...")
             self.log_to_gui(f"👤 Character: {self.character_name}")
             self.log_to_gui(f"🎭 Vocation: {self.character_vocation}")
             self.log_to_gui(f"❤️ Heal threshold: {self.heal_threshold}%")
             self.log_to_gui(f"🔮 Mana threshold: {self.mana_threshold}%")
             self.log_to_gui("🎮 Press F11 to pause/resume, F10 to stop")
+            self.log_to_gui("📊 Individual controls are now active!")
             
             if not self.find_tibia_window():
                 self.log_to_gui("❌ Cannot find Tibia window!")
@@ -741,21 +776,44 @@ class NopalBotIntelligent:
         finally:
             self.running = False
             self.log_to_gui("🏁 Bot finished")
+    
+    def setup_logging(self):
+        """Configurar logging"""
+        logging.basicConfig(
+            level=logging.INFO,
+            format='%(asctime)s - %(levelname)s - %(message)s',
+            handlers=[
+                logging.FileHandler('nopalbot.log'),
+                logging.StreamHandler()
+            ]
+        )
+        
+    def setup_hotkeys(self):
+        """Configurar hotkeys globales"""
+        # Hotkeys globales para pausar/parar
+        keyboard.add_hotkey('f10', self.stop_bot)
+        keyboard.add_hotkey('f11', self.toggle_pause)
 
 class NopalBotGUI:
     def __init__(self):
         self.root = ctk.CTk()
-        self.root.title("🤖 NopalBot Intelligent - Complete Edition")
-        self.root.geometry("800x600")
-        self.root.resizable(True, True)
+        self.root.title("🤖 NopalBot Tomb Edition - Advanced Controls")
+        self.root.geometry("1000x700")
         
-        # Variables
+        # Variables de control
         self.bot = None
         self.bot_thread = None
         self.overlay = None
         
-        # Crear overlay
-        self.overlay = TransparentOverlay(self.root)
+        # Variables de estado
+        self.auto_walk_enabled = False
+        self.auto_attack_enabled = False
+        self.auto_heal_enabled = False
+        self.auto_mana_enabled = False
+        self.auto_food_enabled = False
+        self.auto_spells_enabled = False
+        self.auto_runes_enabled = False
+        self.auto_loot_enabled = False
         
         self.setup_gui()
         
@@ -764,28 +822,101 @@ class NopalBotGUI:
         main_frame = ctk.CTkFrame(self.root)
         main_frame.pack(fill='both', expand=True, padx=10, pady=10)
         
-        # Título
-        title_label = ctk.CTkLabel(main_frame, text="🤖 NOPALBOT INTELLIGENT", 
-                                  font=ctk.CTkFont(size=24, weight="bold"))
-        title_label.pack(pady=10)
+        # Título principal
+        title = ctk.CTkLabel(main_frame, text="🤖 NOPALBOT TOMB EDITION", 
+                            font=ctk.CTkFont(size=24, weight="bold"))
+        title.pack(pady=10)
         
-        # Frame de información del personaje
-        char_frame = ctk.CTkFrame(main_frame)
-        char_frame.pack(fill='x', padx=10, pady=5)
+        # Frame de controles principales
+        controls_frame = ctk.CTkFrame(main_frame)
+        controls_frame.pack(fill='x', padx=10, pady=5)
         
-        char_title = ctk.CTkLabel(char_frame, text="👤 CHARACTER INFO", 
-                                 font=ctk.CTkFont(size=16, weight="bold"))
-        char_title.pack(pady=5)
+        controls_title = ctk.CTkLabel(controls_frame, text="🎮 MAIN CONTROLS", 
+                                     font=ctk.CTkFont(size=16, weight="bold"))
+        controls_title.pack(pady=5)
         
-        # Información del personaje
-        self.char_name_label = ctk.CTkLabel(char_frame, text="Name: Unknown")
-        self.char_name_label.pack()
+        # Botones principales
+        button_frame = ctk.CTkFrame(controls_frame)
+        button_frame.pack(pady=5)
         
-        self.char_vocation_label = ctk.CTkLabel(char_frame, text="Vocation: Druid")
-        self.char_vocation_label.pack()
+        # Fila 1 de botones
+        row1 = ctk.CTkFrame(button_frame)
+        row1.pack(pady=5)
         
-        self.char_level_label = ctk.CTkLabel(char_frame, text="Level: 1")
-        self.char_level_label.pack()
+        self.start_button = ctk.CTkButton(row1, text="🚀 START BOT", 
+                                         command=self.start_bot, 
+                                         fg_color="green", hover_color="darkgreen")
+        self.start_button.pack(side='left', padx=5)
+        
+        self.stop_button = ctk.CTkButton(row1, text="🛑 STOP BOT", 
+                                        command=self.stop_bot, 
+                                        fg_color="red", hover_color="darkred",
+                                        state="disabled")
+        self.stop_button.pack(side='left', padx=5)
+        
+        self.overlay_button = ctk.CTkButton(row1, text="📊 TOGGLE OVERLAY", 
+                                           command=self.toggle_overlay)
+        self.overlay_button.pack(side='left', padx=5)
+        
+        # Frame de controles individuales
+        individual_frame = ctk.CTkFrame(main_frame)
+        individual_frame.pack(fill='x', padx=10, pady=5)
+        
+        individual_title = ctk.CTkLabel(individual_frame, text="⚙️ INDIVIDUAL CONTROLS", 
+                                       font=ctk.CTkFont(size=16, weight="bold"))
+        individual_title.pack(pady=5)
+        
+        # Controles individuales
+        controls_grid = ctk.CTkFrame(individual_frame)
+        controls_grid.pack(pady=5)
+        
+        # Fila 1 de controles
+        row1_controls = ctk.CTkFrame(controls_grid)
+        row1_controls.pack(pady=5)
+        
+        self.walk_button = ctk.CTkButton(row1_controls, text="🚶 AUTO WALK", 
+                                        command=self.toggle_auto_walk,
+                                        fg_color="orange", hover_color="darkorange")
+        self.walk_button.pack(side='left', padx=5)
+        
+        self.attack_button = ctk.CTkButton(row1_controls, text="⚔️ AUTO ATTACK", 
+                                          command=self.toggle_auto_attack,
+                                          fg_color="purple", hover_color="darkpurple")
+        self.attack_button.pack(side='left', padx=5)
+        
+        self.heal_button = ctk.CTkButton(row1_controls, text="❤️ AUTO HEAL", 
+                                        command=self.toggle_auto_heal,
+                                        fg_color="red", hover_color="darkred")
+        self.heal_button.pack(side='left', padx=5)
+        
+        self.mana_button = ctk.CTkButton(row1_controls, text="🔮 AUTO MANA", 
+                                        command=self.toggle_auto_mana,
+                                        fg_color="blue", hover_color="darkblue")
+        self.mana_button.pack(side='left', padx=5)
+        
+        # Fila 2 de controles
+        row2_controls = ctk.CTkFrame(controls_grid)
+        row2_controls.pack(pady=5)
+        
+        self.food_button = ctk.CTkButton(row2_controls, text="🍖 AUTO FOOD", 
+                                        command=self.toggle_auto_food,
+                                        fg_color="brown", hover_color="darkbrown")
+        self.food_button.pack(side='left', padx=5)
+        
+        self.spells_button = ctk.CTkButton(row2_controls, text="⚡ AUTO SPELLS", 
+                                          command=self.toggle_auto_spells,
+                                          fg_color="yellow", hover_color="darkyellow")
+        self.spells_button.pack(side='left', padx=5)
+        
+        self.runes_button = ctk.CTkButton(row2_controls, text="💎 AUTO RUNES", 
+                                         command=self.toggle_auto_runes,
+                                         fg_color="cyan", hover_color="darkcyan")
+        self.runes_button.pack(side='left', padx=5)
+        
+        self.loot_button = ctk.CTkButton(row2_controls, text="💰 AUTO LOOT", 
+                                        command=self.toggle_auto_loot,
+                                        fg_color="gold", hover_color="darkgold")
+        self.loot_button.pack(side='left', padx=5)
         
         # Frame de configuración
         config_frame = ctk.CTkFrame(main_frame)
@@ -795,46 +926,39 @@ class NopalBotGUI:
                                    font=ctk.CTkFont(size=16, weight="bold"))
         config_title.pack(pady=5)
         
-        # Sliders para umbrales
-        self.heal_slider = ctk.CTkSlider(config_frame, from_=10, to=50, 
-                                        number_of_steps=40, command=self.update_heal_threshold)
+        # Sliders de configuración
+        sliders_frame = ctk.CTkFrame(config_frame)
+        sliders_frame.pack(pady=5)
+        
+        # Heal threshold
+        heal_frame = ctk.CTkFrame(sliders_frame)
+        heal_frame.pack(fill='x', pady=2)
+        
+        heal_label = ctk.CTkLabel(heal_frame, text="❤️ Heal Threshold:")
+        heal_label.pack(side='left', padx=5)
+        
+        self.heal_slider = ctk.CTkSlider(heal_frame, from_=10, to=80, 
+                                        command=self.update_heal_threshold)
         self.heal_slider.set(30)
-        heal_label = ctk.CTkLabel(config_frame, text="Heal Threshold: 30%")
-        heal_label.pack()
-        self.heal_slider.pack(pady=5)
+        self.heal_slider.pack(side='left', fill='x', expand=True, padx=5)
         
-        self.mana_slider = ctk.CTkSlider(config_frame, from_=10, to=50, 
-                                        number_of_steps=40, command=self.update_mana_threshold)
+        self.heal_value = ctk.CTkLabel(heal_frame, text="30%")
+        self.heal_value.pack(side='right', padx=5)
+        
+        # Mana threshold
+        mana_frame = ctk.CTkFrame(sliders_frame)
+        mana_frame.pack(fill='x', pady=2)
+        
+        mana_label = ctk.CTkLabel(mana_frame, text="🔮 Mana Threshold:")
+        mana_label.pack(side='left', padx=5)
+        
+        self.mana_slider = ctk.CTkSlider(mana_frame, from_=10, to=80, 
+                                        command=self.update_mana_threshold)
         self.mana_slider.set(30)
-        mana_label = ctk.CTkLabel(config_frame, text="Mana Threshold: 30%")
-        mana_label.pack()
-        self.mana_slider.pack(pady=5)
+        self.mana_slider.pack(side='left', fill='x', expand=True, padx=5)
         
-        # Frame de controles
-        control_frame = ctk.CTkFrame(main_frame)
-        control_frame.pack(fill='x', padx=10, pady=5)
-        
-        control_title = ctk.CTkLabel(control_frame, text="🎮 CONTROLS", 
-                                    font=ctk.CTkFont(size=16, weight="bold"))
-        control_title.pack(pady=5)
-        
-        # Botones
-        button_frame = ctk.CTkFrame(control_frame)
-        button_frame.pack(pady=10)
-        
-        self.start_button = ctk.CTkButton(button_frame, text="🚀 START BOT", 
-                                         command=self.start_bot, 
-                                         fg_color="green", hover_color="darkgreen")
-        self.start_button.pack(side='left', padx=5)
-        
-        self.stop_button = ctk.CTkButton(button_frame, text="🛑 STOP BOT", 
-                                        command=self.stop_bot, 
-                                        fg_color="red", hover_color="darkred")
-        self.stop_button.pack(side='left', padx=5)
-        
-        self.overlay_button = ctk.CTkButton(button_frame, text="📊 TOGGLE OVERLAY", 
-                                           command=self.toggle_overlay)
-        self.overlay_button.pack(side='left', padx=5)
+        self.mana_value = ctk.CTkLabel(mana_frame, text="30%")
+        self.mana_value.pack(side='right', padx=5)
         
         # Frame de hotkeys
         hotkey_frame = ctk.CTkFrame(main_frame)
@@ -846,47 +970,101 @@ class NopalBotGUI:
         
         # Lista de hotkeys
         hotkeys_text = """
-        🎯 Attack: CTRL+SPACE
-        🎯 Next Target: SPACE
-        ❤️ Heal: F1
-        🔮 Mana: F2
-        🍖 Food: F12
-        ⚡ Spell 1: F3 (Exori vis)
-        🛡️ Spell 2: F4 (Exura)
-        💎 Rune: R (Sorcerer)
-        💰 Loot: F5
-        🎁 Quick Loot: 0
-        🚶 Movement: WASD (Tomb Mode)
-        👁️ Face Enemy: CTRL
-        ⏸️ Pause/Resume: F11
-        🛑 Stop Bot: F10
+        🎯 Attack: CTRL+SPACE    🎯 Next Target: SPACE
+        ❤️ Heal: F1             🔮 Mana: F2
+        🍖 Food: F12            ⚡ Spell 1: F3
+        🛡️ Spell 2: F4          💎 Rune: R
+        💰 Loot: F5             🎁 Quick Loot: 0
+        🚶 Movement: WASD       👁️ Face Enemy: CTRL
+        ⏸️ Pause/Resume: F11    🛑 Stop Bot: F10
         """
         
         hotkey_label = ctk.CTkLabel(hotkey_frame, text=hotkeys_text, 
                                    font=ctk.CTkFont(size=12))
         hotkey_label.pack(pady=5)
         
-        # Frame de estado
+        # Frame de estado y log
         status_frame = ctk.CTkFrame(main_frame)
         status_frame.pack(fill='both', expand=True, padx=10, pady=5)
         
-        status_title = ctk.CTkLabel(status_frame, text="📊 STATUS", 
+        status_title = ctk.CTkLabel(status_frame, text="📊 STATUS & LOG", 
                                    font=ctk.CTkFont(size=16, weight="bold"))
         status_title.pack(pady=5)
         
         # Log del bot
-        self.log_text = ctk.CTkTextbox(status_frame, height=150)
+        self.log_text = ctk.CTkTextbox(status_frame, height=200)
         self.log_text.pack(fill='both', expand=True, padx=5, pady=5)
+        
+        # Crear overlay
+        self.overlay = TransparentOverlay(self.root)
         
     def update_heal_threshold(self, value):
         if self.bot:
             self.bot.heal_threshold = int(value)
+        self.heal_value.configure(text=f"{int(value)}%")
         self.log_to_gui(f"❤️ Heal threshold updated: {int(value)}%")
         
     def update_mana_threshold(self, value):
         if self.bot:
             self.bot.mana_threshold = int(value)
+        self.mana_value.configure(text=f"{int(value)}%")
         self.log_to_gui(f"🔮 Mana threshold updated: {int(value)}%")
+        
+    def toggle_auto_walk(self):
+        self.auto_walk_enabled = not self.auto_walk_enabled
+        status = "ENABLED" if self.auto_walk_enabled else "DISABLED"
+        color = "green" if self.auto_walk_enabled else "orange"
+        self.walk_button.configure(fg_color=color)
+        self.log_to_gui(f"🚶 Auto Walk {status}")
+        
+    def toggle_auto_attack(self):
+        self.auto_attack_enabled = not self.auto_attack_enabled
+        status = "ENABLED" if self.auto_attack_enabled else "DISABLED"
+        color = "green" if self.auto_attack_enabled else "purple"
+        self.attack_button.configure(fg_color=color)
+        self.log_to_gui(f"⚔️ Auto Attack {status}")
+        
+    def toggle_auto_heal(self):
+        self.auto_heal_enabled = not self.auto_heal_enabled
+        status = "ENABLED" if self.auto_heal_enabled else "DISABLED"
+        color = "green" if self.auto_heal_enabled else "red"
+        self.heal_button.configure(fg_color=color)
+        self.log_to_gui(f"❤️ Auto Heal {status}")
+        
+    def toggle_auto_mana(self):
+        self.auto_mana_enabled = not self.auto_mana_enabled
+        status = "ENABLED" if self.auto_mana_enabled else "DISABLED"
+        color = "green" if self.auto_mana_enabled else "blue"
+        self.mana_button.configure(fg_color=color)
+        self.log_to_gui(f"🔮 Auto Mana {status}")
+        
+    def toggle_auto_food(self):
+        self.auto_food_enabled = not self.auto_food_enabled
+        status = "ENABLED" if self.auto_food_enabled else "DISABLED"
+        color = "green" if self.auto_food_enabled else "brown"
+        self.food_button.configure(fg_color=color)
+        self.log_to_gui(f"🍖 Auto Food {status}")
+        
+    def toggle_auto_spells(self):
+        self.auto_spells_enabled = not self.auto_spells_enabled
+        status = "ENABLED" if self.auto_spells_enabled else "DISABLED"
+        color = "green" if self.auto_spells_enabled else "yellow"
+        self.spells_button.configure(fg_color=color)
+        self.log_to_gui(f"⚡ Auto Spells {status}")
+        
+    def toggle_auto_runes(self):
+        self.auto_runes_enabled = not self.auto_runes_enabled
+        status = "ENABLED" if self.auto_runes_enabled else "DISABLED"
+        color = "green" if self.auto_runes_enabled else "cyan"
+        self.runes_button.configure(fg_color=color)
+        self.log_to_gui(f"💎 Auto Runes {status}")
+        
+    def toggle_auto_loot(self):
+        self.auto_loot_enabled = not self.auto_loot_enabled
+        status = "ENABLED" if self.auto_loot_enabled else "DISABLED"
+        color = "green" if self.auto_loot_enabled else "gold"
+        self.loot_button.configure(fg_color=color)
+        self.log_to_gui(f"💰 Auto Loot {status}")
         
     def log_to_gui(self, message):
         timestamp = datetime.now().strftime("%H:%M:%S")
@@ -912,6 +1090,16 @@ class NopalBotGUI:
             self.bot.heal_threshold = int(self.heal_slider.get())
             self.bot.mana_threshold = int(self.mana_slider.get())
             
+            # Configurar controles individuales
+            self.bot.auto_walk_enabled = self.auto_walk_enabled
+            self.bot.auto_attack_enabled = self.auto_attack_enabled
+            self.bot.auto_heal_enabled = self.auto_heal_enabled
+            self.bot.auto_mana_enabled = self.auto_mana_enabled
+            self.bot.auto_food_enabled = self.auto_food_enabled
+            self.bot.auto_spells_enabled = self.auto_spells_enabled
+            self.bot.auto_runes_enabled = self.auto_runes_enabled
+            self.bot.auto_loot_enabled = self.auto_loot_enabled
+            
             # Iniciar bot en thread separado
             self.bot_thread = threading.Thread(target=self.bot.run_bot, daemon=True)
             self.bot_thread.start()
@@ -920,6 +1108,7 @@ class NopalBotGUI:
             self.stop_button.configure(state="normal")
             
             self.log_to_gui("🚀 Bot started successfully!")
+            self.log_to_gui("📊 Individual controls are now active!")
             
         except Exception as e:
             messagebox.showerror("Error", f"Failed to start bot: {e}")
