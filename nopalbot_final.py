@@ -149,6 +149,10 @@ class NopalBotIntelligent:
         self.auto_spells_enabled = False
         self.auto_runes_enabled = False
         self.auto_loot_enabled = False
+        self.auto_close_windows_enabled = False
+        self.auto_face_enemy_enabled = False
+        self.auto_use_rope_enabled = False
+        self.auto_use_shovel_enabled = False
         
         # Configuración para druida
         self.hotkeys = {
@@ -689,6 +693,104 @@ class NopalBotIntelligent:
         except Exception as e:
             self.log_to_gui(f"❌ Error casting runes: {e}")
             return False
+    
+    def auto_close_windows(self):
+        """Cerrar automáticamente ventanas molestas (ESC)"""
+        try:
+            # Enviar ESC para cerrar ventanas
+            if not self.send_keyboard_input('esc', "Close windows"):
+                return False
+            
+            self.log_to_gui("🚪 Auto-close windows: ESC sent")
+            return True
+            
+        except Exception as e:
+            self.log_to_gui(f"❌ Error closing windows: {e}")
+            return False
+    
+    def auto_face_enemy(self):
+        """Mirar automáticamente hacia el enemigo (CTRL)"""
+        try:
+            # Presionar CTRL para mirar hacia el enemigo
+            if not self.activate_tibia_window():
+                return False
+            
+            keyboard.press_and_release('ctrl')
+            self.log_to_gui("👁️ Auto face enemy: CTRL sent")
+            time.sleep(0.1)
+            return True
+            
+        except Exception as e:
+            self.log_to_gui(f"❌ Error facing enemy: {e}")
+            return False
+    
+    def auto_use_rope(self):
+        """Usar automáticamente cuerda (R)"""
+        try:
+            # Usar cuerda (R)
+            if not self.send_keyboard_input('r', "Use rope"):
+                return False
+            
+            self.log_to_gui("🪢 Auto use rope: R sent")
+            return True
+            
+        except Exception as e:
+            self.log_to_gui(f"❌ Error using rope: {e}")
+            return False
+    
+    def auto_use_shovel(self):
+        """Usar automáticamente pala (SHIFT+R)"""
+        try:
+            # Usar pala (SHIFT+R)
+            if not self.activate_tibia_window():
+                return False
+            
+            keyboard.press('shift')
+            keyboard.press_and_release('r')
+            keyboard.release('shift')
+            self.log_to_gui("⛏️ Auto use shovel: SHIFT+R sent")
+            time.sleep(0.1)
+            return True
+            
+        except Exception as e:
+            self.log_to_gui(f"❌ Error using shovel: {e}")
+            return False
+    
+    def auto_use_fishing_rod(self):
+        """Usar automáticamente caña de pescar (SHIFT+F)"""
+        try:
+            # Usar caña de pescar (SHIFT+F)
+            if not self.activate_tibia_window():
+                return False
+            
+            keyboard.press('shift')
+            keyboard.press_and_release('f')
+            keyboard.release('shift')
+            self.log_to_gui("🎣 Auto use fishing rod: SHIFT+F sent")
+            time.sleep(0.1)
+            return True
+            
+        except Exception as e:
+            self.log_to_gui(f"❌ Error using fishing rod: {e}")
+            return False
+    
+    def auto_use_machete(self):
+        """Usar automáticamente machete (SHIFT+M)"""
+        try:
+            # Usar machete (SHIFT+M)
+            if not self.activate_tibia_window():
+                return False
+            
+            keyboard.press('shift')
+            keyboard.press_and_release('m')
+            keyboard.release('shift')
+            self.log_to_gui("🔪 Auto use machete: SHIFT+M sent")
+            time.sleep(0.1)
+            return True
+            
+        except Exception as e:
+            self.log_to_gui(f"❌ Error using machete: {e}")
+            return False
             
     def smart_movement(self):
         """Movimiento inteligente con sistema de triple check"""
@@ -778,38 +880,46 @@ class NopalBotIntelligent:
         try:
             # Ejecutar solo las funciones habilitadas
             
-            # 1. Auto Loot (si está habilitado)
+            # 1. Auto Close Windows (si está habilitado) - Prioridad alta
+            if self.auto_close_windows_enabled:
+                if self.auto_close_windows():
+                    return
+                
+            # 2. Auto Loot (si está habilitado)
             if self.auto_loot_enabled:
                 if self.automatic_quick_loot():
                     return
                 
-            # 2. Auto Food (si está habilitado)
+            # 3. Auto Food (si está habilitado)
             if self.auto_food_enabled:
                 if self.automatic_food():
                     return
                 
-            # 3. Auto Heal (si está habilitado)
+            # 4. Auto Heal (si está habilitado)
             if self.auto_heal_enabled:
                 if self.intelligent_healing():
                     return
                 
-            # 4. Auto Mana (si está habilitado)
+            # 5. Auto Mana (si está habilitado)
             if self.auto_mana_enabled:
                 if self.intelligent_mana():
                     return
                 
-            # 5. Auto Attack (si está habilitado)
+            # 6. Auto Attack (si está habilitado)
             if self.auto_attack_enabled:
                 if self.intelligent_attack():
-                    # 6. Auto Spells después de atacar (si está habilitado)
+                    # 7. Auto Face Enemy después de atacar (si está habilitado)
+                    if self.auto_face_enemy_enabled:
+                        self.auto_face_enemy()
+                    # 8. Auto Spells después de atacar (si está habilitado)
                     if self.auto_spells_enabled:
                         self.intelligent_spells()
-                    # 7. Auto Runes después de atacar (si está habilitado)
+                    # 9. Auto Runes después de atacar (si está habilitado)
                     if self.auto_runes_enabled:
                         self.intelligent_runes()
                     return
                 
-            # 8. Auto Walk (si está habilitado y no hay enemigos)
+            # 10. Auto Walk (si está habilitado y no hay enemigos)
             if self.auto_walk_enabled and not self.enemy_detected:
                 self.smart_movement()
                 
@@ -967,6 +1077,10 @@ class NopalBotGUI:
         self.auto_spells_enabled = False
         self.auto_runes_enabled = False
         self.auto_loot_enabled = False
+        self.auto_close_windows_enabled = False
+        self.auto_face_enemy_enabled = False
+        self.auto_use_rope_enabled = False
+        self.auto_use_shovel_enabled = False
         
         self.setup_gui()
         
@@ -1071,6 +1185,30 @@ class NopalBotGUI:
                                         fg_color="gold", hover_color="darkgold")
         self.loot_button.pack(side='left', padx=5)
         
+        # Fila 3 de controles (nuevas funciones útiles)
+        row3_controls = ctk.CTkFrame(controls_grid)
+        row3_controls.pack(pady=5)
+        
+        self.close_windows_button = ctk.CTkButton(row3_controls, text="🚪 AUTO CLOSE", 
+                                                command=self.toggle_auto_close_windows,
+                                                fg_color="gray", hover_color="darkgray")
+        self.close_windows_button.pack(side='left', padx=5)
+        
+        self.face_enemy_button = ctk.CTkButton(row3_controls, text="👁️ AUTO FACE", 
+                                              command=self.toggle_auto_face_enemy,
+                                              fg_color="pink", hover_color="darkpink")
+        self.face_enemy_button.pack(side='left', padx=5)
+        
+        self.rope_button = ctk.CTkButton(row3_controls, text="🪢 AUTO ROPE", 
+                                        command=self.toggle_auto_use_rope,
+                                        fg_color="orange", hover_color="darkorange")
+        self.rope_button.pack(side='left', padx=5)
+        
+        self.shovel_button = ctk.CTkButton(row3_controls, text="⛏️ AUTO SHOVEL", 
+                                          command=self.toggle_auto_use_shovel,
+                                          fg_color="brown", hover_color="darkbrown")
+        self.shovel_button.pack(side='left', padx=5)
+        
         # Frame de configuración
         config_frame = ctk.CTkFrame(main_frame)
         config_frame.pack(fill='x', padx=10, pady=5)
@@ -1129,7 +1267,10 @@ class NopalBotGUI:
         🛡️ Spell 2: F4          💎 Rune: R
         💰 Loot: F5             🎁 Quick Loot: 0
         🚶 Movement: WASD       👁️ Face Enemy: CTRL
-        ⏸️ Pause/Resume: F11    🛑 Stop Bot: F10
+        🚪 Close Windows: ESC   🪢 Use Rope: R
+        ⛏️ Use Shovel: SHIFT+R  🎣 Fishing: SHIFT+F
+        🔪 Use Machete: SHIFT+M ⏸️ Pause/Resume: F11
+        🛑 Stop Bot: F10
         """
         
         hotkey_label = ctk.CTkLabel(hotkey_frame, text=hotkeys_text, 
@@ -1218,6 +1359,34 @@ class NopalBotGUI:
         color = "green" if self.auto_loot_enabled else "gold"
         self.loot_button.configure(fg_color=color)
         self.log_to_gui(f"💰 Auto Loot {status}")
+
+    def toggle_auto_close_windows(self):
+        self.auto_close_windows_enabled = not self.auto_close_windows_enabled
+        status = "ENABLED" if self.auto_close_windows_enabled else "DISABLED"
+        color = "green" if self.auto_close_windows_enabled else "gray"
+        self.close_windows_button.configure(fg_color=color)
+        self.log_to_gui(f"🚪 Auto Close Windows {status}")
+
+    def toggle_auto_face_enemy(self):
+        self.auto_face_enemy_enabled = not self.auto_face_enemy_enabled
+        status = "ENABLED" if self.auto_face_enemy_enabled else "DISABLED"
+        color = "green" if self.auto_face_enemy_enabled else "pink"
+        self.face_enemy_button.configure(fg_color=color)
+        self.log_to_gui(f"👁️ Auto Face Enemy {status}")
+
+    def toggle_auto_use_rope(self):
+        self.auto_use_rope_enabled = not self.auto_use_rope_enabled
+        status = "ENABLED" if self.auto_use_rope_enabled else "DISABLED"
+        color = "green" if self.auto_use_rope_enabled else "orange"
+        self.rope_button.configure(fg_color=color)
+        self.log_to_gui(f"🪢 Auto Use Rope {status}")
+
+    def toggle_auto_use_shovel(self):
+        self.auto_use_shovel_enabled = not self.auto_use_shovel_enabled
+        status = "ENABLED" if self.auto_use_shovel_enabled else "DISABLED"
+        color = "green" if self.auto_use_shovel_enabled else "brown"
+        self.shovel_button.configure(fg_color=color)
+        self.log_to_gui(f"⛏️ Auto Use Shovel {status}")
         
     def log_to_gui(self, message):
         timestamp = datetime.now().strftime("%H:%M:%S")
@@ -1252,6 +1421,10 @@ class NopalBotGUI:
             self.bot.auto_spells_enabled = self.auto_spells_enabled
             self.bot.auto_runes_enabled = self.auto_runes_enabled
             self.bot.auto_loot_enabled = self.auto_loot_enabled
+            self.bot.auto_close_windows_enabled = self.auto_close_windows_enabled
+            self.bot.auto_face_enemy_enabled = self.auto_face_enemy_enabled
+            self.bot.auto_use_rope_enabled = self.auto_use_rope_enabled
+            self.bot.auto_use_shovel_enabled = self.auto_use_shovel_enabled
             
             # Iniciar bot en thread separado
             self.bot_thread = threading.Thread(target=self.bot.run_bot, daemon=True)
