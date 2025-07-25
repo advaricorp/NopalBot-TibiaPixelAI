@@ -1,0 +1,16 @@
+{
+  "screen_regions": {
+    "health_bar": {
+      "x": 2440,
+      "y": 535,
+      "width": 200,
+      "height": 30
+    },
+    "mana_bar": {
+      "x": 320,
+      "y": 20,
+      "width": 200,
+      "height": 30
+    }
+  }
+}

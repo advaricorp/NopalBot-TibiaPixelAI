@@ -1,69 +1,54 @@
 {
-  "bot_settings": {
-    "profession": "knight",
-    "auto_attack": true,
-    "auto_movement": true,
-    "auto_loot": true,
-    "spells_enabled": true,
-    "emergency_spells": true,
-    "movement_type": "patrol",
-    "attack_range": "melee",
-    "loot_priority": "gold_only"
-  },
+  "vocation": "elite_knight",
   "hotkeys": {
-    "attack": "space",
-    "loot": "f4",
-    "movement_up": "w",
-    "movement_down": "s",
-    "movement_left": "a",
-    "movement_right": "d",
-    "emergency_kill": "f12",
-    "pause": "f1",
-    "stop": "f2"
-  },
-  "spells": {
-    "knight": {
-      "healing": ["exura", "exura gran", "exura ico"],
-      "support": ["utani hur", "utani gran hur"],
-      "emergency": ["exura vita", "exura gran ico"]
-    },
-    "paladin": {
-      "healing": ["exura", "exura san"],
-      "support": ["utani hur", "utani gran hur"],
-      "emergency": ["exura vita", "exura gran san"]
-    },
-    "sorcerer": {
-      "healing": ["exura", "exura gran"],
-      "support": ["utani hur", "utani gran hur"],
-      "emergency": ["exura vita", "exura gran"]
-    },
-    "druid": {
-      "healing": ["exura", "exura gran"],
-      "support": ["utani hur", "utani gran hur"],
-      "emergency": ["exura vita", "exura gran"]
-    },
-    "mage": {
-      "healing": ["exura", "exura gran"],
-      "support": ["utani hur", "utani gran hur"],
-      "emergency": ["exura vita", "exura gran"]
-    }
-  },
-  "movement_patterns": {
-    "patrol": ["w", "a", "s", "d"],
-    "stair_up": ["w"],
-    "stair_down": ["s"],
-    "random": ["w", "a", "s", "d"]
+    "attack": "ctrl+space",
+    "next_target": "space",
+    "exori": "f5",
+    "exori_ico": "f6",
+    "exori_gran": "f7",
+    "utani_hur": "f8",
+    "utito_tempo": "f9",
+    "food": "f12",
+    "health_potion": "f1",
+    "mana_potion": "f2",
+    "rune": "r",
+    "quick_loot": "0",
+    "stop": "f10",
+    "pause": "f11"
   },
   "thresholds": {
-    "health_low": 30,
-    "health_medium": 50,
-    "mana_low": 20,
-    "mana_medium": 40
+    "heal": 40,
+    "mana": 27,
+    "food": 80
   },
   "timing": {
-    "attack_cooldown": 1.0,
-    "movement_cooldown": 0.5,
-    "loot_cooldown": 2.0,
-    "spell_cooldown": 3.0
+    "attack_delay": 0.5,
+    "spell_delay": 1.0,
+    "movement_delay": 0.3,
+    "heal_delay": 2.0,
+    "mana_delay": 3.0,
+    "food_delay": 10.0
+  },
+  "movement": {
+    "auto_exploration": false,
+    "avoid_stairs": true,
+    "anti_stuck_enabled": true,
+    "direction_change_interval": 15
+  },
+  "combat": {
+    "auto_attack": true,
+    "auto_spells": false,
+    "auto_runes": false,
+    "target_priority": "closest"
+  },
+  "features": {
+    "computer_vision": false,
+    "mapping": false,
+    "overlay": false,
+    "auto_loot": true,
+    "auto_heal": true,
+    "auto_mana": true,
+    "auto_food": true,
+    "auto_walk": true
   }
 }
