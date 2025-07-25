@@ -88,7 +88,7 @@ exe = EXE(
         "--clean",
         "--onefile",
         "--windowed",
-        "--name=NopalBot_Improved",
+        "--name=NopalBot_TombEdition", # Changed name to avoid conflict
         "nopalbot_final.py"
     ], capture_output=True, text=True)
     
@@ -96,76 +96,93 @@ exe = EXE(
         print("✅ Compilation successful!")
         
         # Verificar que el ejecutable existe
-        exe_path = Path("dist/NopalBot_Improved.exe")
+        exe_path = Path("dist/NopalBot_TombEdition.exe")
         if exe_path.exists():
             print(f"🎉 Executable created: {exe_path}")
             
             # Crear archivo batch para ejecutar
             batch_content = '''@echo off
-title NopalBot Improved - Complete Edition
-echo.
-echo ========================================
-echo    NOPALBOT IMPROVED - COMPLETE EDITION
-echo ========================================
-echo.
-echo Starting NopalBot...
-echo.
-echo Controls:
-echo - F11: Pause/Resume
-echo - F12: Stop Bot
-echo.
-echo Make sure Tibia is running!
-echo.
-pause
-NopalBot_Improved.exe
-pause
-'''
-            
-            with open("dist/LAUNCH_NOPALBOT_IMPROVED.bat", 'w', encoding='utf-8') as f:
+ title NopalBot Tomb Edition - Ankrahmun Farming
+ echo.
+ echo ========================================
+ echo    NOPALBOT TOMB EDITION - FARMING
+ echo ========================================
+ echo.
+ echo Starting NopalBot for Ankrahmun Tombs...
+ echo.
+ echo Features:
+ echo - Smart Tomb Movement (WASD)
+ echo - Rune Casting for Sorcerer (R)
+ echo - Food on F12
+ echo - Emergency Stop on F10
+ echo.
+ echo Make sure Tibia is running!
+ echo.
+ pause
+ NopalBot_TombEdition.exe
+ pause
+ '''
+             
+            with open("dist/LAUNCH_NOPALBOT_TOMB.bat", 'w', encoding='utf-8') as f:
                 f.write(batch_content)
             
-            print("📄 Launch script created: dist/LAUNCH_NOPALBOT_IMPROVED.bat")
+            print("📄 Launch script created: dist/LAUNCH_NOPALBOT_TOMB.bat")
             
             # Crear README
-            readme_content = '''# 🤖 NopalBot Improved - Complete Edition
+            readme_content = '''# 🤖 NopalBot Tomb Edition - Ankrahmun Farming
 
 ## 🚀 How to Use
 
 1. **Make sure Tibia is running**
-2. **Double-click `LAUNCH_NOPALBOT_IMPROVED.bat`** or `NopalBot_Improved.exe`
+2. **Double-click `LAUNCH_NOPALBOT_TOMB.bat`** or `NopalBot_TombEdition.exe`
 3. **Configure your Tibia hotkeys** (see below)
 4. **Click "START BOT"** in the GUI
-5. **Use F11 to pause/resume, F12 to stop**
+5. **Use F11 to pause/resume, F10 to stop**
 
 ## ⌨️ Required Tibia Hotkeys
 
 Configure these hotkeys in your Tibia client:
 
-- **K** → Attack
+- **SPACE** → Next Target
+- **CTRL + SPACE** → Attack
 - **F1** → Health Potion
 - **F2** → Mana Potion  
+- **F12** → Food (¡PON TU COMIDA AQUÍ!)
 - **F3** → Spell 1 (Exori vis for Druid)
 - **F4** → Spell 2 (Exura for Druid)
+- **R** → Rune (for Sorcerer)
 - **F5** → Loot
 - **0** → Quick Loot Nearby Corpses
 - **WASD** → Movement
 - **CTRL** → Face Enemy
 
-## 🎮 Bot Features
+## 🏺 Tomb Features
 
+- ✅ **Smart Tomb Movement** (líneas rectas en tumbas)
+- ✅ **Obstacle Detection** (cambia dirección si se traba)
+- ✅ **Rune Casting** (R key para sorcerer)
 - ✅ **Intelligent Healing** (random thresholds 20-40%)
 - ✅ **Intelligent Mana Management** (random thresholds 20-40%)
 - ✅ **Visual Enemy Detection** (red/brown colors)
 - ✅ **Automatic Attack** (clicks enemy + presses K)
 - ✅ **Smart Spell Casting** (only if mana > 60%)
 - ✅ **Quick Loot Automation** (1 second after enemy death)
-- ✅ **Smart WASD Movement** (detects obstacles and avoids them)
 - ✅ **Transparent Overlay** (real-time status)
 - ✅ **Character Detection** (name and vocation)
 - ✅ **Potion Detection** (stops using when out of potions)
 - ✅ **Real Health/Mana Detection** (from screen)
 - ✅ **Pause/Resume** (F11)
-- ✅ **Emergency Stop** (F12)
+- ✅ **Emergency Stop** (F10)
+
+## 🏺 Tomb Movement System
+
+The bot uses intelligent movement specifically designed for Ankrahmun tombs:
+
+- **Starts moving South (S)**
+- **If stuck for 5 seconds**: Changes to East (D)
+- **Sequence**: S → D → W → A → S (cycle)
+- **If stuck multiple times**: Tries opposite direction
+- **Movement speed**: Every 0.8 seconds
 
 ## 🔧 Troubleshooting
 
@@ -174,6 +191,7 @@ Configure these hotkeys in your Tibia client:
 - **Not healing**: Verify F1 hotkey is set to health potion
 - **Not using spells**: Check F3/F4 hotkeys and mana threshold
 - **Movement issues**: Bot automatically detects and avoids obstacles
+- **Rune not working**: Make sure R hotkey is set for sorcerer
 
 ## 📊 Overlay
 
@@ -183,25 +201,25 @@ Toggle it with the "TOGGLE OVERLAY" button.
 ## 🛡️ Safety
 
 - Bot only clicks within Tibia window
-- F12 stops bot immediately
+- F10 stops bot immediately
 - F11 pauses for manual control
 - All actions are logged for monitoring
-- Smart movement prevents getting stuck
+- Smart movement prevents getting stuck in tombs
 
 ---
-**Created with ❤️ for Tibia players**
+**Created with ❤️ for Tibia players - Perfect for Ankrahmun farming!**
 '''
             
-            with open("dist/README_NOPALBOT_IMPROVED.txt", 'w', encoding='utf-8') as f:
+            with open("dist/README_NOPALBOT_TOMB.txt", 'w', encoding='utf-8') as f:
                 f.write(readme_content)
             
-            print("📖 README created: dist/README_NOPALBOT_IMPROVED.txt")
+            print("📖 README created: dist/README_NOPALBOT_TOMB.txt")
             
             print("\n🎉 BUILD COMPLETED SUCCESSFULLY!")
             print("📁 Check the 'dist' folder for:")
-            print("   - NopalBot_Improved.exe")
-            print("   - LAUNCH_NOPALBOT_IMPROVED.bat")
-            print("   - README_NOPALBOT_IMPROVED.txt")
+            print("   - NopalBot_TombEdition.exe")
+            print("   - LAUNCH_NOPALBOT_TOMB.bat")
+            print("   - README_NOPALBOT_TOMB.txt")
             
         else:
             print("❌ Executable not found after compilation")
