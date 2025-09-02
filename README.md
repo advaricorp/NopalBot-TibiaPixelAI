@@ -1,127 +1,141 @@
-# 🤖 Tibia Bot 2025 - ANTI-BAN, Movimiento Constante y Sin Hechizos
+🤖 Tibia Bot 2025 - ANTI-BAN, Constant Movement, and No Spells
 
-<div align="center">
 
-![Tibia Bot Logo](https://em-content.zobj.net/source/microsoft-teams/363/robot_1f916.png)
 
-**By Taquito Loco 🎮**
+By Taquito Loco 🎮
 
-</div>
 
----
 
-## 🚀 ¿Qué es Tibia Bot 2025?
+🚀 What is Tibia Bot 2025?
+A professional bot for Tibia, 100% anti-ban, that simulates a human player:
 
-Un bot profesional para Tibia, 100% anti-ban, que simula un jugador humano:
-- **NO lanza hechizos** (anti-ban total)
-- **Movimiento constante** con WASD
-- **Detección automática de escaleras** (sube/baja con W/S)
-- **Solo usa teclado** (mouse deshabilitado)
-- **Control total por CLI, GUI o ejecutable directo**
+NO spell casting (total anti-ban)
+Constant movement with WASD
+Automatic stair detection (climbs/descends with W/S)
+Keyboard-only control (mouse disabled)
+Full control via CLI, GUI, or direct executable
 
----
 
-## 🏆 Características Principales
+🏆 Main Features
 
-- ⚔️ **Ataque físico con SPACE** (NO F3, nunca lanza hechizos)
-- 🚶 **Movimiento constante** (patrulla automática, nunca se queda quieto)
-- 🪜 **Detección de escaleras** (sube/baja automáticamente)
-- 💰 **Loot automático** (F4)
-- 🛡️ **Anti-ban definitivo** (sin magia, sin pociones, solo acciones físicas)
-- 👤 **Evita atacar jugadores** (detección básica)
-- 🖥️ **Interfaz CLI y GUI moderna**
-- 🧑‍💻 **Fácil de usar y configurar**
+⚔️ Physical attack with SPACE (NO F3, never casts spells)
+🚶 Constant movement (automatic patrolling, never stands still)
+🪜 Stair detection (automatically climbs/descends)
+💰 Automatic looting (F4)
+🛡️ Ultimate anti-ban (no magic, no potions, only physical actions)
+👤 Avoids attacking players (basic detection)
+🖥️ Modern CLI and GUI interface
+🧑‍💻 Easy to use and configure
 
----
 
-## 🗂️ Ejecutables Disponibles
+🗂️ Available Executables
 
-| Ejecutable                | Descripción                        |
-|--------------------------|------------------------------------|
-| `NoSpellsBotImproved.exe`| Bot mejorado, anti-ban, recomendado|
-| `TibiaBotCLI.exe`        | CLI Matrix Style                   |
-| `TibiaBotGUI.exe`        | GUI Moderna                        |
 
----
 
-## 🕹️ Controles del Bot
+Executable
+Description
 
-| Acción                | Tecla      |
-|----------------------|------------|
-| Ataque físico        | `SPACE`    |
-| Movimiento           | `WASD`     |
-| Loot                 | `F4`       |
-| Pausar/Reanudar      | `F1`       |
-| Detener bot          | `F2`       |
-| KILL EMERGENCY       | `F12`      |
 
----
 
-## 🛡️ Ventajas Anti-Ban
+NoSpellsBotImproved.exe
+Improved bot, anti-ban, recommended
 
-- ❌ **No lanza hechizos** (ni Exura Infir, ni pociones, ni magia)
-- ✅ **Solo acciones físicas** (ataque, movimiento, loot)
-- ✅ **Mouse deshabilitado** (solo teclado)
-- ✅ **No usa F3** (solo SPACE para atacar)
-- ✅ **Sin "you must learn this spell first"**
-- ✅ **Sin riesgo de baneo por magia**
 
----
+TibiaBotCLI.exe
+CLI Matrix Style
 
-## 🏃‍♂️ Movimiento y Escaleras
 
-- 🚶 **Movimiento constante**: patrulla automática, nunca se queda quieto
-- 🪜 **Detección de escaleras**: sube y baja con W/S automáticamente
-- 🔄 **Cambio de dirección**: cada pocos pasos
+TibiaBotGUI.exe
+Modern GUI
 
----
 
-## 🖥️ Cómo Ejecutar
 
-1. **Activa el entorno virtual** (si no está activo):
-   ```powershell
-   .\venv\Scripts\activate
-   ```
-2. **Ejecuta el bot mejorado (recomendado):**
-   ```powershell
-   cd dist
-   .\NoSpellsBotImproved.exe
-   ```
-3. **O usa la CLI o GUI:**
-   ```powershell
-   cd dist
-   .\TibiaBotCLI.exe   # CLI Matrix Style
-   .\TibiaBotGUI.exe   # GUI Moderna
-   ```
+🕹️ Bot Controls
 
----
 
-## 🛠️ Troubleshooting
 
-- **Bot no inicia:** Verifica que Tibia esté ejecutándose y el entorno virtual esté activo.
-- **Controles no funcionan:** Ejecuta como administrador.
-- **Errores:** Revisa la consola y los logs en la carpeta `logs/`.
-- **KILL EMERGENCY:** Usa F12 para detener el bot inmediatamente.
+Action
+Key
 
----
 
-## 📝 Configuración en Tibia
 
-- **SPACE** - Ataque físico (NO F3)
-- **F4** - Loot
-- **WASD** - Movimiento
-- ❌ **NO configures F1, F2, F3 para pociones o hechizos**
+Physical attack
+SPACE
 
----
 
-## 📄 Licencia
+Movement
+WASD
 
-Este bot es para uso personal. Uso bajo responsabilidad del usuario.
 
----
+Loot
+F4
 
-<div align="center">
 
-**🎉 Tibia Bot 2025 - ANTI-BAN - By Taquito Loco 🎮**
+Pause/Resume
+F1
 
-</div> 
+
+Stop bot
+F2
+
+
+KILL EMERGENCY
+F12
+
+
+
+🛡️ Anti-Ban Advantages
+
+❌ No spell casting (no Exura Infir, no potions, no magic)
+✅ Only physical actions (attack, movement, loot)
+✅ Mouse disabled (keyboard only)
+✅ No F3 usage (only SPACE for attacking)
+✅ No "you must learn this spell first"
+✅ No ban risk from magic
+
+
+🏃‍♂️ Movement and Stairs
+
+🚶 Constant movement: automatic patrolling, never stands still
+🪜 Stair detection: climbs and descends with W/S automatically
+🔄 Direction change: every few steps
+
+
+🖥️ How to Run
+
+Activate the virtual environment (if not already active):.\venv\Scripts\activate
+
+
+Run the improved bot (recommended):cd dist
+.\NoSpellsBotImproved.exe
+
+
+Or use the CLI or GUI:cd dist
+.\TibiaBotCLI.exe   # CLI Matrix Style
+.\TibiaBotGUI.exe   # Modern GUI
+
+
+
+
+🛠️ Troubleshooting
+
+Bot doesn’t start: Ensure Tibia is running and the virtual environment is active.
+Controls not working: Run as administrator.
+Errors: Check the console and logs in the logs/ folder.
+KILL EMERGENCY: Use F12 to stop the bot immediately.
+
+
+📝 Tibia Configuration
+
+SPACE - Physical attack (NOT F3)
+F4 - Loot
+WASD - Movement
+❌ DO NOT configure F1, F2, F3 for potions or spells
+
+
+📄 License
+This bot is for personal use. Use at your own risk.
+
+
+
+🎉 Tibia Bot 2025 - ANTI-BAN - By Taquito Loco 🎮
